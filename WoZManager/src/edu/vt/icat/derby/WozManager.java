@@ -33,7 +33,7 @@ import gnu.io.SerialPortEventListener;
 public class WozManager extends PApplet implements OscEventListener, PacketListener, SerialPortEventListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
-	public static final String DefaultHostName = "localhost";
+	public static final String DefaultHostName = "netlenovo";
 
 	private OscP5 server=null;
 
@@ -337,6 +337,11 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 
 	public synchronized static void sendTxRequest(TxRequest16 txRequest) 
 	{
+		if(!xbee.isConnected())
+		{
+			return;
+		}
+		
 		try {
 			xbee.sendAsynchronous(txRequest);
 		} catch (XBeeException e) 
