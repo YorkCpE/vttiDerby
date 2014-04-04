@@ -77,6 +77,10 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 				System.out.println("Manager: acquiring serial port "+port);
 				break;
 			}
+			else
+			{
+				xbee.close();
+			}
 		}
 
 		if(!xbeeConnected)
