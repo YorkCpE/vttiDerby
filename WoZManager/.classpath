@@ -16,12 +16,12 @@
 	<classpathentry kind="lib" path="libs/xbee-api-0.9/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="libs/processing/RXTXcomm.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WozSystem/libs/processing/Serial Drivers/windows64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WoZSystem/libs/processing/Serial Drivers/windows64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="libs/processing/serial.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WozSystem/libs/processing/Serial Drivers/windows64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WoZSystem/libs/processing/Serial Drivers/windows64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
