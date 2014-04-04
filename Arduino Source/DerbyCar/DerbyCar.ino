@@ -50,6 +50,8 @@ void loop()
           Serial.println("Lap Start/Stop");
        }
        
+       //this is needed because otherwise the command executes four times instead of once
+       //bad logic somewhere but this works
        readArray[0]=0x0;
        readArray[1]=0x0;
        readArray[2]=0x0;
