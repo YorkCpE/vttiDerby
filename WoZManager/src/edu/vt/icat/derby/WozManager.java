@@ -34,7 +34,7 @@ import gnu.io.SerialPortEventListener;
 public class WozManager extends PApplet implements OscEventListener, PacketListener, SerialPortEventListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
-	public static final String DefaultHostName = "netlenovo";
+	public static final String DefaultHostName = "localhost";
 
 	private OscP5 server=null;
 
