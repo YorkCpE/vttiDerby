@@ -69,7 +69,7 @@ public class WoZCommand
 			argBytes= new byte[]{a,b};
 		}
 		
-		byte checkSum=(byte) (commandByte^argBytes[0]^argBytes[1]);
+		byte checkSum=(byte) (commandByte^argBytes[0]^argBytes[1]^0xff);
 		int[] payload={commandByte,argBytes[0],argBytes[1],checkSum};
 		return payload;
 	}

@@ -89,6 +89,7 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 		if(!xbeeConnected)
 		{
 			System.out.println("Manager couldn't establish connection with the Xbee!!");
+			xbee.close();
 		}
 
 		new ArduinoSender(xbeeQueue).start();
