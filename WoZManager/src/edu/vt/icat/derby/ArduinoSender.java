@@ -16,7 +16,7 @@ public class ArduinoSender extends Thread
 		myQueue=xbeeQueue;
 	}
 	
-	private int[] generateNodeIdentifier(String arduinoTarget)
+	/*private int[] generateNodeIdentifier(String arduinoTarget)
 	{
 		int[] NI = new int[arduinoTarget.length()-1];
 		
@@ -33,7 +33,7 @@ public class ArduinoSender extends Thread
 		}
 		
 		return NI;
-	}
+	}*/
 
 	@Override
 	public void run()

@@ -13,50 +13,50 @@ public class XbeeID
 	
 	public XbeeID(LicenseColor c, LicenseShape s) 
 	{
-		byte upperByte = 0x0;
-		byte lowerByte = 0x0;
+		byte upperBits = 0x0;
+		byte lowerBits = 0x0;
 		
 		switch (s) 
 		{
 		case Triangle:
-			upperByte=0x0;
+			upperBits=0x0;
 			break;
 		case Square:
-			upperByte=0x10;
+			upperBits=0x10;
 			break;
 		case Circle:
-			upperByte=0x20;
+			upperBits=0x20;
 			break;
 		default: 
-			upperByte=0x0;
+			upperBits=0x0;
 			break;
 		}
 		
 		switch(c)
 		{
 		case Red:
-			lowerByte=0x09;
+			lowerBits=0x09;
 			break;
 		case Blue:
-			lowerByte=0xA;
+			lowerBits=0xA;
 			break;
 		case Green:
-			lowerByte=0xB;
+			lowerBits=0xB;
 			break;
 		case Yellow:
-			lowerByte=0xC;
+			lowerBits=0xC;
 			break;
 		case Purple:
-			lowerByte=0xD;
+			lowerBits=0xD;
 			break;
 		case Black:
-			lowerByte=0xE;
+			lowerBits=0xE;
 			break;
 		case Orange:
-			lowerByte=0xF;
+			lowerBits=0xF;
 			break;
 		default:
-			lowerByte=0x0;
+			lowerBits=0x0;
 			break;
 		}
 		
@@ -64,7 +64,7 @@ public class XbeeID
 		String identified=c.toString()+s.toString();
 		setNodeIdentifier(identified.toUpperCase());
 		
-		MYaddress= new byte[]{upperByte,lowerByte};
+		MYaddress= new byte[]{0x0,(byte) (upperBits^lowerBits)};
 	}
 	
 	private boolean setNodeIdentifier(String ni)

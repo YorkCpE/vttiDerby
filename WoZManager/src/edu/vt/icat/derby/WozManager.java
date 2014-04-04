@@ -24,15 +24,17 @@ import processing.core.PApplet;
 import processing.serial.Serial;
 import edu.vt.icat.derby.DerbyCar.LicenseColor;
 import edu.vt.icat.derby.DerbyCar.LicenseShape;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 
 /**
  * @author Jason Forsyth
  *
  */
-public class WozManager extends PApplet implements OscEventListener, PacketListener
+public class WozManager extends PApplet implements OscEventListener, PacketListener, SerialPortEventListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
-	public static final String DefaultHostName = "localhost";
+	public static final String DefaultHostName = "netlenovo";
 
 	private OscP5 server=null;
 
@@ -65,12 +67,13 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 		boolean xbeeConnected=false;
 		for(String port : serialPorts)
 		{
-			try {
+			try 
+			{
 				xbee.open(port, 9600);
 				xbeeConnected=checkXbeeConnection(xbee);
 			} catch (XBeeException e) 
 			{
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 
 			if(xbeeConnected)
@@ -78,11 +81,16 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 				System.out.println("Manager: acquiring serial port "+port);
 				break;
 			}
+			else
+			{
+				//xbee.close();
+			}
 		}
 
 		if(!xbeeConnected)
 		{
 			System.out.println("Manager couldn't establish connection with the Xbee!!");
+			xbee.close();
 		}
 
 		new ArduinoSender(xbeeQueue).start();
@@ -331,12 +339,23 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 
 	public synchronized static void sendTxRequest(TxRequest16 txRequest) 
 	{
+		if(!xbee.isConnected())
+		{
+			return;
+		}
+		
 		try {
 			xbee.sendAsynchronous(txRequest);
 		} catch (XBeeException e) 
 		{
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void serialEvent(SerialPortEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
