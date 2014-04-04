@@ -23,12 +23,14 @@ import processing.core.PApplet;
 import processing.serial.Serial;
 import edu.vt.icat.derby.DerbyCar.LicenseColor;
 import edu.vt.icat.derby.DerbyCar.LicenseShape;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 
 /**
  * @author Jason Forsyth
  *
  */
-public class WozManager extends PApplet implements OscEventListener, PacketListener
+public class WozManager extends PApplet implements OscEventListener, PacketListener, SerialPortEventListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
 	public static final String DefaultHostName = "localhost";
@@ -64,12 +66,13 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 		boolean xbeeConnected=false;
 		for(String port : serialPorts)
 		{
-			try {
+			try 
+			{
 				xbee.open(port, 9600);
 				xbeeConnected=checkXbeeConnection(xbee);
 			} catch (XBeeException e) 
 			{
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 
 			if(xbeeConnected)
@@ -79,7 +82,7 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 			}
 			else
 			{
-				xbee.close();
+				//xbee.close();
 			}
 		}
 
@@ -340,6 +343,12 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 		{
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void serialEvent(SerialPortEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
