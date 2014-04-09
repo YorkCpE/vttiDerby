@@ -4,34 +4,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.rapplogic.xbee.api.ApiId;
-import com.rapplogic.xbee.api.AtCommand;
-import com.rapplogic.xbee.api.AtCommandResponse;
-import com.rapplogic.xbee.api.PacketListener;
-import com.rapplogic.xbee.api.XBee;
-import com.rapplogic.xbee.api.XBeeException;
-import com.rapplogic.xbee.api.XBeeRequest;
-import com.rapplogic.xbee.api.XBeeResponse;
-import com.rapplogic.xbee.api.XBeeTimeoutException;
-import com.rapplogic.xbee.api.wpan.TxRequest16;
-
 import netP5.NetAddress;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
 import oscP5.OscP5;
 import oscP5.OscStatus;
 import processing.core.PApplet;
-import processing.serial.Serial;
 import edu.vt.icat.derby.DerbyCar.LicenseColor;
 import edu.vt.icat.derby.DerbyCar.LicenseShape;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 
 /**
  * @author Jason Forsyth
  *
  */
-public class WozManager extends PApplet implements OscEventListener, PacketListener, SerialPortEventListener
+public class WozManager extends PApplet implements OscEventListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
 	public static final String DefaultHostName = "localhost";
@@ -42,58 +28,24 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 
 	public static final int DEFAULT_LISTENING_PORT=3944;
 
-	private static XBee xbee;
-
-	private final int[] nodeIdentifier={'M','A','N','A','G','E','R'};
-	
 	private LinkedBlockingQueue<WoZCommand> xbeeQueue;
+	
+	private ArduinoSender sender;
+	
+	private HeartbeatMonitor heartBeatMonitor;
 
 	public WozManager()
 	{
 		server = new OscP5(this, DEFAULT_LISTENING_PORT);
 		server.plug(this,"receiveEcho",WozControlMessage.ECHO);
 		server.plug(this,"receiveEchoAck",WozControlMessage.ECHO_ACK);
+		server.plug(this, "heartBeat", WozControlMessage.HEARTBEAT);
 
 		server.plug(this, "collisionWarning", WoZCommand.COLLISION_WARNING);
 		server.plug(this, "laneViolation", WoZCommand.LANE_VIOLATION);
 		server.plug(this, "lapStartStop", WoZCommand.LAP_STARTSTOP);
 
 		xbeeQueue = new LinkedBlockingQueue<WoZCommand>();
-
-		//try to establish connection with the Xbee
-		String[] serialPorts=Serial.list();
-		xbee = new XBee();
-
-		boolean xbeeConnected=false;
-		for(String port : serialPorts)
-		{
-			try 
-			{
-				xbee.open(port, 9600);
-				xbeeConnected=checkXbeeConnection(xbee);
-			} catch (XBeeException e) 
-			{
-				//e.printStackTrace();
-			}
-
-			if(xbeeConnected)
-			{
-				System.out.println("Manager: acquiring serial port "+port);
-				break;
-			}
-			else
-			{
-				//xbee.close();
-			}
-		}
-
-		if(!xbeeConnected)
-		{
-			System.out.println("Manager couldn't establish connection with the Xbee!!");
-			xbee.close();
-		}
-
-		new ArduinoSender(xbeeQueue).start();
 
 		allDerbyCars = new LinkedList<DerbyCar>();
 
@@ -106,96 +58,30 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 				allDerbyCars.add(newCar);
 			}
 		}
-	}
-
-	/**
-	 * 7E 00 0A 01 01 50 01 00 48 65 6C 6C 6F B8
-
-		7E
-		Start delimiter
-		00 0A
-		Length bytes
-		01
-		API identifier
-		01
-		API frame ID
-		50 01
-		Destination address low
-		00
-		Option byte
-		48 65 6C 6C 6F
-		Data packet
-		B8
-		Checksum
-
-	 * @param xbee Xbee object to test and see if there's actually an Xbee on the serial point
-	 * @return Return true if an Xbee is connected, false otherwise.
-	 */
-	private synchronized boolean checkXbeeConnection(XBee xbee) 
-	{
-		int[] commandResponse=null;
 		
-		commandResponse = sendATCommand("NI", null, 3000);
+		sender=new ArduinoSender(xbeeQueue);
+		sender.start();
 		
-		for(int i=0;i<commandResponse.length;i++)
-		{
-			if(commandResponse[i]!=nodeIdentifier[i])
-			{
-				return false;
-			}
-		}
-		return true;
+		heartBeatMonitor=new HeartbeatMonitor(allDerbyCars);
+		heartBeatMonitor.start();	
 	}
-
+	
 	/**
-	 * @param xbee
-	 * @param commandResponse
-	 * @return
+	 * Called whenever an Echo is received.
+	 * @param sourceIP Source ip of the client sending the heart beat request
+	 * @param sourcePort Source port of the client
+	 * @param args Heart beat arguments, should the Arduino name of the device
 	 */
-	public static synchronized int[] sendATCommand(String command, int[] args, int timeout) 
+	public void heartBeat(String sourceIP, int sourcePort, String args)
 	{
-		int[] commandResponse=null;
-		try {
-			
-			AtCommand atCommand = null;
-			
-			if(args==null)
-			{
-				atCommand=new AtCommand(command);
-			}
-			else
-			{
-				atCommand=new AtCommand(command, args);
-			}
-				
-			
-			XBeeResponse response = xbee.sendSynchronous(atCommand,timeout);
-
-			if (response.getApiId() == ApiId.AT_RESPONSE) 
-			{
-				// since this API ID is AT_RESPONSE, we know to cast to AtCommandResponse
-				AtCommandResponse atResponse = (AtCommandResponse) response;
-				if (atResponse.isOk()) 
-				{
-					// command was successful
-					commandResponse=atResponse.getValue();
-
-					//System.out.println("Command returned " + ByteUtils.toBase16(atResponse.getValue()));
-				} 
-				else 
-				{
-					// command failed!
-				}
-			}
-		} catch (XBeeTimeoutException e) 
-		{
-			e.printStackTrace();
-		} catch (XBeeException e) 
-		{
-			e.printStackTrace();
-		}
-		return commandResponse;
+		String alive=heartBeatMonitor.isOnline(args)?("alive"):("dead");
+		
+		//send response
+		WozControlMessage heartBeatAck = new WozControlMessage(WozControlMessage.HEARTBEAT_ACK, server.ip(), DEFAULT_LISTENING_PORT, alive);
+		NetAddress destinationAddress = new NetAddress(sourceIP, sourcePort);
+		server.send(heartBeatAck.generateOscMessage(), destinationAddress);
 	}
+	
 
 	/**
 	 * Called whenever a collision warning received.
@@ -326,36 +212,4 @@ public class WozManager extends PApplet implements OscEventListener, PacketListe
 	{
 		PApplet.main(new String[] {WozManager.class.getName() });
 	}
-
-	/**
-	 * Called when receiving an Xbee response
-	 */
-	@Override
-	public void processResponse(XBeeResponse arg0) 
-	{
-
-
-	}
-
-	public synchronized static void sendTxRequest(TxRequest16 txRequest) 
-	{
-		if(!xbee.isConnected())
-		{
-			return;
-		}
-		
-		try {
-			xbee.sendAsynchronous(txRequest);
-		} catch (XBeeException e) 
-		{
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void serialEvent(SerialPortEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

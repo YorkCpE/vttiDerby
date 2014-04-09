@@ -7,6 +7,9 @@ public class WozControlMessage
 	public static final String ECHO="/echo";
 	public static final String ECHO_ACK="/echoAck";
 	
+	public static final String HEARTBEAT="/heartBeat";
+	public static final String HEARTBEAT_ACK="/heartBeatAck";
+	
 	public static final String HARDWAREUPDATE="/hardwareUpdate";
 	
 	private String messageType;

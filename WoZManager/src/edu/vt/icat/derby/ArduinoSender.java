@@ -16,28 +16,11 @@ public class ArduinoSender extends Thread
 		myQueue=xbeeQueue;
 	}
 	
-	/*private int[] generateNodeIdentifier(String arduinoTarget)
-	{
-		int[] NI = new int[arduinoTarget.length()-1];
-		
-		int j=0;
-		for(int i=0;i<NI.length;i++)
-		{
-			char c = arduinoTarget.charAt(j);
-			if(c==',')
-			{
-				j++;
-			}
-			NI[i]=arduinoTarget.charAt(j);
-			j++;
-		}
-		
-		return NI;
-	}*/
-
 	@Override
 	public void run()
 	{
+		XbeeManager xbee = XbeeManager.getInstance();
+		
 		while(true)
 		{
 			WoZCommand wozCommand = null;
@@ -54,7 +37,7 @@ public class ArduinoSender extends Thread
 			XBeeAddress16 addr = new XBeeAddress16(myAddr[0],myAddr[1]);
 			TxRequest16 txRequest = new TxRequest16(addr, payload);
 			
-			WozManager.sendTxRequest(txRequest);
+			xbee.sendAsyncRequest(txRequest);
 		}
 	}
 }

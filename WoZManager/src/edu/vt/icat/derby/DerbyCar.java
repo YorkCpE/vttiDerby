@@ -6,8 +6,6 @@ public class DerbyCar
 	static public enum LicenseShape {Triangle,Circle,Square};
 	static public enum LicenseColor {Red, Blue, Green, Orange, Yellow, Purple, Black};
 	
-
-	
 	private XbeeID xbeeID;
 	private LicenseColor myColor;
 	private LicenseShape myShape;
@@ -28,6 +26,11 @@ public class DerbyCar
 	{
 		return myColor.toString().toLowerCase()+myShape.toString().toLowerCase();
 	}
+	
+	public byte[] getXbeeMYAddress()
+	{
+		return xbeeID.getMYAddress();
+	}
 
 	public static byte[] lookupMYAddress(String target) 
 	{
@@ -44,5 +47,22 @@ public class DerbyCar
 	private XbeeID getXBeeInfo() 
 	{
 		return this.xbeeID;
+	}
+	
+	public LicenseColor getColor()
+	{
+		
+		return this.myColor;
+	}
+	
+	public LicenseShape getShape()
+	{
+		
+		return this.myShape;
+	}
+
+	public String getArduinoName() 
+	{
+		return myColor+","+myShape;
 	}
 }

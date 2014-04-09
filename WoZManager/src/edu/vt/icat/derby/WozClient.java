@@ -36,17 +36,21 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private Button laneViolation;
 	private Button collisionWarning;
 	
-	private Button checkConnection;
-	
 	private boolean enableLocalXbee=false;
 	private boolean connectedToWoZManager=false;
+	private boolean connectedToArduino=false;
 	
 	private NetAddress wozManagerAddress;
 	private long lastManagerEcho=0;
-
+	private long lastArduinoEcho=0;
+	
 	public static final int DEFAULT_CLIENT_PORT=3847;
 	private String myCurrentIP="";
 	private int myCurrentPort;
+
+	private Button checkArduinoConnection;
+
+	
 	
 	public WozClient() 
 	{
@@ -58,6 +62,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		//plug the echo and echo ack commands so we don't have to directly process these messages
 		localHost.plug(this, "receiveEcho", WozControlMessage.ECHO);
 		localHost.plug(this, "receiveEchoAck", WozControlMessage.ECHO_ACK);
+		localHost.plug(this, "receiveHeartBeatAck", WozControlMessage.HEARTBEAT_ACK);
 
 		//sleep so everything has time to setup
 		try {
@@ -78,6 +83,17 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	}
 	
 
+	public void receiveHeartBeatAck(String sourceIP, int port, String args)
+	{
+		if(args.equals("alive"))
+		{
+			connectedToArduino=true;
+		}
+		else
+		{
+			connectedToArduino=false;
+		}
+	}
 	/**
 	 * Called when an echo message is received. Should respond with EchoAsk to hostname and port.
 	 * @param sourceIP Hostname of device sending Echo
@@ -147,18 +163,17 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 						sendCollisionWarning();
 					}
 				});
-	/*	
-		checkConnection = cp5.addButton("Check Connection")
-				.setPosition(lapButton.getAbsolutePosition().x+lapButton.getWidth()+10, 300)
+		
+		checkArduinoConnection = cp5.addButton("Check Arduino Connection")
+				.setPosition(collisionWarning.getAbsolutePosition().x+lapButton.getWidth()+10, 300)
 				.addListener(new ControlListener() {
 					
 					@Override
 					public void controlEvent(ControlEvent arg0) 
 					{
-						connectedToWoZManager=false;
-						sendEcho(wozManagerAddress);
+						connectedToArduino=false;
 					}
-				});*/
+				});
 				
 
 		carColorListBox = cp5.addListBox("Car Color")
@@ -249,14 +264,29 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		textSize(16);
 		text(currentColor+" "+currentShape,10,300);
 		
-		text((connectedToWoZManager)?"Connected":"No Connection",10,400);
+		text((connectedToWoZManager)?"Connected To Manager":"No Manager Connection",10,400);
+		
+		text((connectedToArduino)?"Connected To Arduino":"No Arduino Connection",10,500);
 		
 		if(Math.abs(System.currentTimeMillis()-lastManagerEcho)>10000)
 		{
 			connectedToWoZManager=false;
 			sendEcho(wozManagerAddress);
 		}
+		
+		if(Math.abs(System.currentTimeMillis()-lastArduinoEcho)>10000)
+		{
+			connectedToArduino=false;
+			sendArduinoHeartbeat(wozManagerAddress);
+		}
 	}
+
+	private void sendArduinoHeartbeat(NetAddress addr) 
+	{
+		WozControlMessage echo = new WozControlMessage(WozControlMessage.HEARTBEAT, myCurrentIP, myCurrentPort, currentColor+","+currentShape);
+		localHost.send(echo.generateOscMessage(),addr);
+	}
+
 
 	public void controlEvent(ControlEvent theEvent) 
 	{
