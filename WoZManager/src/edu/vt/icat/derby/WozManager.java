@@ -1,7 +1,9 @@
 package edu.vt.icat.derby;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import netP5.NetAddress;
@@ -25,18 +27,21 @@ public class WozManager extends PApplet implements OscEventListener
 	private OscP5 server=null;
 
 	private List<DerbyCar> allDerbyCars;
+	
+	private HashMap<String, DerbyCar> arduinoNameMap;
+	
+	private HashMap<String, DerbyCar> xbeeNameMap;
 
-	public static final int DEFAULT_LISTENING_PORT=3944;
+	public static final int MANAGER_DEFAULT_LISTENING_PORT=3944;
 
 	private LinkedBlockingQueue<WoZCommand> xbeeQueue;
 	
-	private ArduinoSender sender;
-	
-	private HeartbeatMonitor heartBeatMonitor;
+	//private LinkedBlockingQueue<DerbyCar> carsToCheck;
+	private ConcurrentHashMap<DerbyCar, Long> carCheckin;
 
 	public WozManager()
 	{
-		server = new OscP5(this, DEFAULT_LISTENING_PORT);
+		server = new OscP5(this, MANAGER_DEFAULT_LISTENING_PORT);
 		server.plug(this,"receiveEcho",WozControlMessage.ECHO);
 		server.plug(this,"receiveEchoAck",WozControlMessage.ECHO_ACK);
 		server.plug(this, "heartBeat", WozControlMessage.HEARTBEAT);
@@ -48,6 +53,8 @@ public class WozManager extends PApplet implements OscEventListener
 		xbeeQueue = new LinkedBlockingQueue<WoZCommand>();
 
 		allDerbyCars = new LinkedList<DerbyCar>();
+		
+		carCheckin = new ConcurrentHashMap<DerbyCar, Long>();
 
 		//generate all derby cars
 		for(LicenseColor c : LicenseColor.values())
@@ -56,28 +63,35 @@ public class WozManager extends PApplet implements OscEventListener
 			{
 				DerbyCar newCar = new DerbyCar(c,s);
 				allDerbyCars.add(newCar);
+				
+				arduinoNameMap.put(newCar.getArduinoName(), newCar);
+				xbeeNameMap.put(newCar.getXbeeName(), newCar);
 			}
 		}
 		
-		sender=new ArduinoSender(xbeeQueue);
-		sender.start();
-		
-		heartBeatMonitor=new HeartbeatMonitor(allDerbyCars);
-		heartBeatMonitor.start();	
+		new ArduinoSender(xbeeQueue).start();
+		new HeartbeatMonitor(allDerbyCars,carCheckin).start();
 	}
 	
 	/**
-	 * Called whenever an Echo is received.
+	 * Called whenever an Heart Beat request is received.
 	 * @param sourceIP Source ip of the client sending the heart beat request
 	 * @param sourcePort Source port of the client
 	 * @param args Heart beat arguments, should the Arduino name of the device
 	 */
 	public void heartBeat(String sourceIP, int sourcePort, String args)
-	{
-		String alive=heartBeatMonitor.isOnline(args)?("alive"):("dead");
+	{	
+		DerbyCar car = arduinoNameMap.get(args);
+		
+		long lastCheckIn=-1;
+		
+		if(car!=null)
+		{
+			lastCheckIn = carCheckin.get(car);
+		}
 		
 		//send response
-		WozControlMessage heartBeatAck = new WozControlMessage(WozControlMessage.HEARTBEAT_ACK, server.ip(), DEFAULT_LISTENING_PORT, alive);
+		WozControlMessage heartBeatAck = new WozControlMessage(WozControlMessage.HEARTBEAT_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, args+","+String.valueOf(lastCheckIn));
 		NetAddress destinationAddress = new NetAddress(sourceIP, sourcePort);
 		server.send(heartBeatAck.generateOscMessage(), destinationAddress);
 	}
@@ -147,7 +161,7 @@ public class WozManager extends PApplet implements OscEventListener
 		//System.out.println("WoZ Manager received echo from "+sourceIP+" on port "+sourcePort);
 
 		//send response
-		WozControlMessage echoAck = new WozControlMessage(WozControlMessage.ECHO_ACK, server.ip(), DEFAULT_LISTENING_PORT, "");
+		WozControlMessage echoAck = new WozControlMessage(WozControlMessage.ECHO_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
 		NetAddress destinationAddress = new NetAddress(sourceIP, sourcePort);
 		server.send(echoAck.generateOscMessage(), destinationAddress);
 	}

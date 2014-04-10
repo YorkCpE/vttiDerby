@@ -1,7 +1,8 @@
 package edu.vt.icat.derby;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.rapplogic.xbee.api.XBeeAddress16;
 import com.rapplogic.xbee.api.wpan.TxRequest16;
@@ -9,19 +10,13 @@ import com.rapplogic.xbee.api.wpan.TxStatusResponse;
 
 public class HeartbeatMonitor extends Thread
 {
+	private ConcurrentHashMap<DerbyCar, Long> currentState;
+	private List<DerbyCar> cars;
 
-	private List<DerbyCar> allCars;
-	private HashMap<String, Boolean> currentState;
-
-	public HeartbeatMonitor(List<DerbyCar> cars) 
+	public HeartbeatMonitor(List<DerbyCar> allCars, ConcurrentHashMap<DerbyCar, Long> carCheckin) 
 	{
-		allCars = cars;
-		currentState = new HashMap<String, Boolean>();
-	}
-
-	public synchronized Boolean isOnline(String arduinoTarget)
-	{
-		return currentState.get(arduinoTarget);
+		cars=allCars;
+		currentState=carCheckin;
 	}
 
 	@Override
@@ -30,8 +25,9 @@ public class HeartbeatMonitor extends Thread
 		XbeeManager xbee = XbeeManager.getInstance();
 		while(true)
 		{
-			for(DerbyCar car : allCars)
+			for(DerbyCar car : cars)
 			{
+
 				WoZCommand echo = new WoZCommand(car.getColor(), car.getShape(), WoZCommand.IS_ONLINE, null);
 				byte[] myAddr = DerbyCar.lookupMYAddress(echo.getTarget());
 				int[] payload = echo.generateXbeePayload();
@@ -44,19 +40,18 @@ public class HeartbeatMonitor extends Thread
 				//some error occurred
 				if(response==null)
 				{
-					currentState.put(car.getArduinoName(),false);
+
 				}
 				else
 				{
 					if (response.isSuccess()) 
 					{
-						currentState.put(car.getArduinoName(),true);
+						currentState.put(car, System.currentTimeMillis());
 					} 
 					else 
 					{
 						// packet was not delivered
 						System.out.println("Heart Beat Packet was not delivered.  status: " + response.getStatus());
-						currentState.put(car.getArduinoName(),false);
 					}
 				}
 

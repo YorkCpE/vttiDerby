@@ -48,7 +48,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private String myCurrentIP="";
 	private int myCurrentPort;
 
-	private Button checkArduinoConnection;
+	//private Button checkArduinoConnection;
 
 	
 	
@@ -72,7 +72,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		}
 		
 		//find address for WoZManager
-		wozManagerAddress = new NetAddress(WozManager.DefaultHostName,WozManager.DEFAULT_LISTENING_PORT);
+		wozManagerAddress = new NetAddress(WozManager.DefaultHostName,WozManager.MANAGER_DEFAULT_LISTENING_PORT);
 		
 		//send an echo to the WoZManager
 		sendEcho(wozManagerAddress);
@@ -85,14 +85,26 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 	public void receiveHeartBeatAck(String sourceIP, int port, String args)
 	{
-		if(args.equals("alive"))
+		String[] splits = args.split(",");
+		
+		if(splits.length!=2)
 		{
-			connectedToArduino=true;
+			return;
+		}
+		
+		String arduinoName=splits[0];
+		long lastCheckin = Long.valueOf(splits[1]);
+		
+		if(lastCheckin<=0)
+		{
+			return;
 		}
 		else
 		{
-			connectedToArduino=false;
+			lastArduinoEcho=lastCheckin;
 		}
+		
+		System.out.println("Last heart from "+arduinoName+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
 	}
 	/**
 	 * Called when an echo message is received. Should respond with EchoAsk to hostname and port.
@@ -164,7 +176,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 					}
 				});
 		
-		checkArduinoConnection = cp5.addButton("Check Arduino Connection")
+		/*checkArduinoConnection = cp5.addButton("Check Arduino Connection")
 				.setPosition(collisionWarning.getAbsolutePosition().x+lapButton.getWidth()+10, 300)
 				.addListener(new ControlListener() {
 					
@@ -174,7 +186,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 						connectedToArduino=false;
 					}
 				});
-				
+				*/
 
 		carColorListBox = cp5.addListBox("Car Color")
 				.setPosition(10, 50)
@@ -299,6 +311,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				
 				LicenseColor color = LicenseColor.values()[index];
 				setColor(color);
+				connectedToArduino=false;
 			}
 			else if(theEvent.getName().equals("Car Shape"))
 			{
@@ -306,6 +319,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				
 				LicenseShape shape = LicenseShape.values()[index];
 				setShape(shape);
+				connectedToArduino=false;
 			}
 		}
 	}
