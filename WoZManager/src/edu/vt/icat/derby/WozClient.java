@@ -48,6 +48,12 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private String myCurrentIP="";
 	private int myCurrentPort;
 
+	@SuppressWarnings("unused")
+	private Button checkArduinoButton;
+	private boolean checkArduinoConnection=false;
+	
+	private static final int ARDUINO_TIMEOUT=10000;
+
 	//private Button checkArduinoConnection;
 
 	
@@ -87,24 +93,27 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	{
 		String[] splits = args.split(",");
 		
-		if(splits.length!=2)
+		if(splits.length!=3)
 		{
 			return;
 		}
 		
-		String arduinoName=splits[0];
-		long lastCheckin = Long.valueOf(splits[1]);
+		String color=splits[0];
+		String shape=splits[1];
+		long lastCheckin = Long.valueOf(splits[2]);
 		
 		if(lastCheckin<=0)
 		{
+			connectedToArduino=false;
+			lastCheckin=-1;
 			return;
 		}
 		else
 		{
 			lastArduinoEcho=lastCheckin;
 		}
-		
-		System.out.println("Last heart from "+arduinoName+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
+
+		System.out.println("Last heart from "+color+","+shape+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
 	}
 	/**
 	 * Called when an echo message is received. Should respond with EchoAsk to hostname and port.
@@ -176,17 +185,17 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 					}
 				});
 		
-		/*checkArduinoConnection = cp5.addButton("Check Arduino Connection")
+		checkArduinoButton = cp5.addButton("Check Arduino Connection")
 				.setPosition(collisionWarning.getAbsolutePosition().x+lapButton.getWidth()+10, 300)
 				.addListener(new ControlListener() {
-					
+
 					@Override
 					public void controlEvent(ControlEvent arg0) 
 					{
-						connectedToArduino=false;
+						checkArduinoConnection=true;
 					}
 				});
-				*/
+				
 
 		carColorListBox = cp5.addListBox("Car Color")
 				.setPosition(10, 50)
@@ -286,17 +295,40 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			sendEcho(wozManagerAddress);
 		}
 		
-		if(Math.abs(System.currentTimeMillis()-lastArduinoEcho)>10000)
+		if(checkArduinoConnection==true || (Math.abs(System.currentTimeMillis()-lastArduinoEcho)>ARDUINO_TIMEOUT))
 		{
+			checkArduinoConnection=false;
 			connectedToArduino=false;
 			sendArduinoHeartbeat(wozManagerAddress);
 		}
+		
+		else
+		{
+			connectedToArduino=true;
+		}
 	}
 
+	private static final long ALLOWABLE_REQUESTS_INTERVAL=1000;
+	private static long lastHeartBeatRequest=0;
+	
+	/**
+	 * Sends a request to the manager to see when the last Arduino heartbeat was. Will only
+	 * occur once every ALLOWABLE_REQUESTS_INTERVAL
+	 * @param addr Destination of the Manager to send the heartbeat request
+	 */
 	private void sendArduinoHeartbeat(NetAddress addr) 
-	{
+	{	
+		long delta = (System.currentTimeMillis()-lastHeartBeatRequest);
+		
+		if(delta<ALLOWABLE_REQUESTS_INTERVAL)
+		{
+			return;
+		}
+		
 		WozControlMessage echo = new WozControlMessage(WozControlMessage.HEARTBEAT, myCurrentIP, myCurrentPort, currentColor+","+currentShape);
 		localHost.send(echo.generateOscMessage(),addr);
+		
+		lastHeartBeatRequest=System.currentTimeMillis();
 	}
 
 

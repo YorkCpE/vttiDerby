@@ -11,17 +11,17 @@ public class WoZCommand
 	public static final String LAP_STARTSTOP="/lapStartStop";
 	public static final String SYSTEM_CHECK="/systemCheck";
 	public static final String IS_ONLINE="/isOnline";
-	
+
 	private String target;
 	private String command;
 	private String args;
-	
+
 	private static final byte LANE_VIOLATION_BYTE=0xA;
 	private static final byte COLLISION_WARNING_BYTE=0xB;
 	private static final byte LAP_STARTSTOP_BYTE=0xC;
 	private static final byte HEARTBEAT_BYTE=0xD;
 	private static final byte SYSTEM_CHECK_BYTE=0xE;
-	
+
 	public WoZCommand(LicenseColor color, LicenseShape shape, String _command, String _args) 
 	{
 		target=color+","+shape;
@@ -34,7 +34,7 @@ public class WoZCommand
 		OscMessage newMessage = new OscMessage(command);
 		newMessage.add(target);
 		newMessage.add(args);
-		
+
 		return newMessage;
 	}
 
@@ -42,7 +42,7 @@ public class WoZCommand
 	{
 		return target;
 	}
-	
+
 	public int[] generateXbeePayload()
 	{	
 		byte commandByte=0x0;
@@ -70,21 +70,25 @@ public class WoZCommand
 		{
 			commandByte=0x0;
 		}
-		
+
 		byte[] argBytes={0x0,0x0};
-		
-		if(args.getBytes().length==1)
+
+		if(args!=null)
 		{
-			byte b = args.getBytes()[0];
-			argBytes= new byte[]{0x0,b};
+
+			if(args.getBytes().length==1)
+			{
+				byte b = args.getBytes()[0];
+				argBytes= new byte[]{0x0,b};
+			}
+			else if(args.getBytes().length>=2)
+			{
+				byte a = args.getBytes()[0];
+				byte b = args.getBytes()[1];
+				argBytes= new byte[]{a,b};
+			}
 		}
-		else if(args.getBytes().length>=2)
-		{
-			byte a = args.getBytes()[0];
-			byte b = args.getBytes()[1];
-			argBytes= new byte[]{a,b};
-		}
-		
+
 		byte checkSum=(byte) (commandByte^argBytes[0]^argBytes[1]^0xff);
 		int[] payload={commandByte,argBytes[0],argBytes[1],checkSum};
 		return payload;
