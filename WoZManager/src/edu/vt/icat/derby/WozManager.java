@@ -16,31 +16,58 @@ import edu.vt.icat.derby.DerbyCar.LicenseColor;
 import edu.vt.icat.derby.DerbyCar.LicenseShape;
 
 /**
+ * WoZManager manages communication between the WoZClients, the Arduinos via Xbee, and forwards information to the Scoreboard.
  * @author Jason Forsyth
  *
  */
 public class WozManager extends PApplet implements OscEventListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
+	
+	/**
+	 * hostname for the OSC server. Should be set to a real host name if deployed.
+	 */
 	public static final String DefaultHostName = "localhost";
 
 	private OscP5 server=null;
 
 	private List<DerbyCar> allDerbyCars;
 
+	/**
+	 * map between the ArduinoName of a car and the DerbyCar object
+	 */
 	private HashMap<String, DerbyCar> arduinoNameMap;
 
+	/**
+	 * map between the XbeeName of a car and the DerbyCar Object
+	 */
 	private HashMap<String, DerbyCar> xbeeNameMap;
 
+	/**
+	 * Default listening port for the OSC Server
+	 */
 	public static final int MANAGER_DEFAULT_LISTENING_PORT=3944;
 
+	/**
+	 * Concurrent queue to send commands over the Xbee network. Queue is read by the XbeeManager
+	 */
 	private LinkedBlockingQueue<WoZCommand> xbeeQueue;
 
+	/**
+	 * Concurrent queue to send Heartbeat commands
+	 */
 	private LinkedBlockingQueue<HeartBeatResponseMessage> heartBeatQueue;
+	
+	/**
+	 * Concurrent hashmap used by HeartBeat Monitor to exchange checkin information.
+	 */
 	private ConcurrentHashMap<DerbyCar, Long> carCheckin;
 
 	public WozManager()
 	{
+		//create the OSC server and plug all the relevant messages
+		//a plugged message will automatically be called when it is received
+		//the function name must match exactly
 		server = new OscP5(this, MANAGER_DEFAULT_LISTENING_PORT);
 		server.plug(this,"receiveEcho",WozControlMessage.ECHO);
 		server.plug(this,"receiveEchoAck",WozControlMessage.ECHO_ACK);
@@ -74,8 +101,15 @@ public class WozManager extends PApplet implements OscEventListener
 			}
 		}
 
+		//start up our other threads
+		
+		//give the ArduinoSender our queue so they can pass things over the network
 		new ArduinoSender(xbeeQueue).start();
+		
+		//give the HeartBeat monitor our hashmap so it can update times
 		new HeartbeatMonitor(allDerbyCars,carCheckin).start();
+		
+		//give the Responder our queue so it can talk back to the WozClients
 		new HeartBeatResponder(heartBeatQueue, carCheckin).start();
 	}
 
@@ -90,21 +124,9 @@ public class WozManager extends PApplet implements OscEventListener
 		DerbyCar car = arduinoNameMap.get(args);
 
 		heartBeatQueue.add(new HeartBeatResponseMessage(sourceIP, sourcePort, car));
-
-		//heartBeatQueue.add(new HeartBeatResponseMessage(sourceIP, sourcePort, car));
-		//long lastCheckIn=-1;
-
-		//if(car!=null)
-		//{
-		//so some reason there is an error thrown when calling get()... guess I'll have to
-		//spawn another thread...
-		//lastCheckIn = carCheckin.get(car);
-		//}
-
-		/*//send response
-		WozControlMessage heartBeatAck = new WozControlMessage(WozControlMessage.HEARTBEAT_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, args+","+String.valueOf(lastCheckIn));
-		NetAddress destinationAddress = new NetAddress(sourceIP, sourcePort);
-		server.send(heartBeatAck.generateOscMessage(), destinationAddress);*/
+		
+		//Note: for some reason we can't access the Checkin hashmap directly. There is some conflict
+		//in the OscP5 library that gets pissy with cross thread access.
 	}
 
 
@@ -122,6 +144,7 @@ public class WozManager extends PApplet implements OscEventListener
 			return;
 		}
 
+		//pass command off to the ArduinoSender
 		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.COLLISION_WARNING, args));
 	}
 
@@ -132,7 +155,6 @@ public class WozManager extends PApplet implements OscEventListener
 	 */
 	public void laneViolation(String arduinoTarget, String args)
 	{
-		//System.out.println(arduinoTarget+": Lane Violation");
 		String[] splits=arduinoTarget.split(",");
 
 		if(splits.length>2)
@@ -140,6 +162,7 @@ public class WozManager extends PApplet implements OscEventListener
 			return;
 		}
 
+		//pass off command to the ArduinoSender
 		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.LANE_VIOLATION, args));
 	}
 
@@ -158,6 +181,7 @@ public class WozManager extends PApplet implements OscEventListener
 			return;
 		}
 
+		//pass off command to the Arduino sender
 		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.LAP_STARTSTOP, args));
 	}
 
@@ -169,9 +193,7 @@ public class WozManager extends PApplet implements OscEventListener
 	 */
 	public void receiveEcho(String sourceIP, int sourcePort, String args)
 	{
-		//System.out.println("WoZ Manager received echo from "+sourceIP+" on port "+sourcePort);
-
-		//send response
+		//send response directly
 		WozControlMessage echoAck = new WozControlMessage(WozControlMessage.ECHO_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
 		NetAddress destinationAddress = new NetAddress(sourceIP, sourcePort);
 		server.send(echoAck.generateOscMessage(), destinationAddress);
@@ -186,12 +208,25 @@ public class WozManager extends PApplet implements OscEventListener
 
 	public void receiveEchoAck(String sourceIP, int sourcePort, String args)
 	{
-		System.out.println("WoZ Manager received echoAck from "+sourceIP+" on port "+sourcePort);
+		
 	}
 
+	/**
+	 * This class responds to heartbeat requests from the WoZClients. We can't respond directly in the function call because of 
+	 * cross-thread issues in the OscP5 library.
+	 * @author Jason Forsyth
+	 *
+	 */
 	public class HeartBeatResponder extends Thread
 	{
+		/**
+		 * Queue of WoZClients to respond to
+		 */
 		private LinkedBlockingQueue<HeartBeatResponseMessage> myQueue;
+		
+		/**
+		 * My concurrent copy of the Arduino checkins
+		 */
 		private ConcurrentHashMap<DerbyCar, Long> checkins;
 
 		public HeartBeatResponder(LinkedBlockingQueue<HeartBeatResponseMessage> queue, ConcurrentHashMap<DerbyCar, Long> timeStamps)
@@ -207,28 +242,35 @@ public class WozManager extends PApplet implements OscEventListener
 			{
 				HeartBeatResponseMessage request=null;
 				try {
+					//grab a request, block until this happens
 					request=myQueue.take();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 
+				//ignore a bad object
 				if(request==null)
 				{
 					continue;
 				}
 
+				//get the car I'm concerned about
 				DerbyCar car=request.getCar();
 
+				//get the last checkin time
 				Object value = checkins.get(car);
 				
+				//make sure it's not a null value (because it's coming out of a hashmap)
 				long lastCheckin=(value==null)?-1:(long)value;
 				
+				//get the destination for this message
 				String hostname=request.getDesintationIP();
 				int port = request.getDesinationPort();
 
-
+				//compose the message arguments
 				String args=car.getColor()+","+car.getShape()+","+lastCheckin;
 
+				//create an OSC Control Message for this
 				OscMessage oscMessage = new OscMessage(WozControlMessage.HEARTBEAT_ACK);
 				NetAddress destination = new NetAddress(hostname, port);
 
@@ -236,12 +278,18 @@ public class WozManager extends PApplet implements OscEventListener
 				oscMessage.add(WozManager.MANAGER_DEFAULT_LISTENING_PORT);
 				oscMessage.add(args);
 
+				//send it asynchronously
 				OscP5.flush(oscMessage, destination);
 
 			}
 		}
 	}
 
+	/**
+	 * Wrapper class for the heart beat responses
+	 * @author Jason Forsyth
+	 *
+	 */
 	public class HeartBeatResponseMessage
 	{
 		private String ip;
@@ -315,6 +363,10 @@ public class WozManager extends PApplet implements OscEventListener
 
 	}
 
+	/**
+	 * Main function, starts up the processing sketch
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
 		PApplet.main(new String[] {WozManager.class.getName() });

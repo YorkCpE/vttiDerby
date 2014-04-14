@@ -3,6 +3,11 @@ package edu.vt.icat.derby;
 import edu.vt.icat.derby.DerbyCar.LicenseColor;
 import edu.vt.icat.derby.DerbyCar.LicenseShape;
 
+/**
+ * Contains largely static information about the Derby Cars. Is used to find their Xbee network address.
+ * @author Jason Forsyth
+ *
+ */
 public class XbeeID 
 {
 	private byte[] serialNumber={0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};

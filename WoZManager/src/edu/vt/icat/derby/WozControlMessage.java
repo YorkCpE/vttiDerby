@@ -2,6 +2,11 @@ package edu.vt.icat.derby;
 
 import oscP5.OscMessage;
 
+/**
+ * WoZControlMessages are sent strictly between the WoZClient and WoZManger to maintain their relationship.
+ * @author Jason Forsyth
+ *
+ */
 public class WozControlMessage 
 {
 	public static final String ECHO="/echo";

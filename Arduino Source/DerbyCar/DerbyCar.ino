@@ -32,6 +32,7 @@ void loop()
     readArray[counter%4]=mySerial.read(); 
     counter++;
 
+    //determine if this packet is valid
     boolean validPacket=(readArray[0]^readArray[1]^readArray[2]^readArray[3])==0xff;
 
     if(validPacket)

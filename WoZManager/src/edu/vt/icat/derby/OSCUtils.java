@@ -2,8 +2,17 @@ package edu.vt.icat.derby;
 
 import oscP5.OscMessage;
 
+/**
+ * Random OSC utilities that make life easier.
+ * @author Jason Forsyth
+ *
+ */
 public class OSCUtils 
 {
+	/**
+	 * Print out an OSC message with unknown contents to System.out
+	 * @param theMessage
+	 */
 	public static void printUnknownMessage(OscMessage theMessage)
 	{
 		if(theMessage.isPlugged())

@@ -12,6 +12,8 @@ import com.rapplogic.xbee.api.XBeeTimeoutException;
 import com.rapplogic.xbee.api.wpan.TxRequest16;
 
 /**
+ * Class is responsible for sending messages over the Xbee network. Class is a singleton as there should only be one instance
+ * For reference, a typical Xbee API packet looks as follows: 
  * 7E 00 0A 01 01 50 01 00 48 65 6C 6C 6F B8
 
 	7E
@@ -33,44 +35,56 @@ import com.rapplogic.xbee.api.wpan.TxRequest16;
 
 public class XbeeManager {
 
+	/**
+	 * Global singleton
+	 */
 	private static XbeeManager instance=null;
 
+	/**
+	 * Actual Xbee object used to send information
+	 */
 	private static XBee xbee;
 
+	/**
+	 * The name of the attached Xbee should match this exactly
+	 */
 	private final int[] nodeIdentifier={'M','A','N','A','G','E','R'};
 
 	private XbeeManager() 
 	{
-		//try to establish connection with the Xbee
+		//get a list of serial ports
 		String[] serialPorts=Serial.list();
+		
+		//create a new Xbee object
 		xbee = new XBee();
 
+		//try each port and find one that has MANAGER attached
 		boolean xbeeConnected=false;
 		for(String port : serialPorts)
 		{
 			try 
 			{
 				xbee.open(port, 9600);
-				xbeeConnected=checkXbeeConnection(xbee);
+				xbeeConnected=checkNodeIdentifier(xbee);
 			} catch (XBeeException e) 
 			{
-				//e.printStackTrace();
+				
 			}
 
 			if(xbeeConnected)
 			{
-				System.out.println("Manager: acquiring serial port "+port);
+				System.out.println("XbeeManager: acquiring serial port "+port);
 				break;
 			}
 			else
 			{
-				//xbee.close();
+				
 			}
 		}
 
 		if(!xbeeConnected)
 		{
-			System.out.println("Manager couldn't establish connection with the Xbee!!");
+			System.out.println("XbeeManager couldn't establish connection with the Xbee!!");
 			xbee.close();
 		}
 
@@ -82,7 +96,7 @@ public class XbeeManager {
 	 * @param xbee Xbee object to test and see if there's actually an Xbee on the serial point
 	 * @return Return true if an Xbee is connected, false otherwise.
 	 */
-	private synchronized boolean checkXbeeConnection(XBee xbee) 
+	private synchronized boolean checkNodeIdentifier(XBee xbee) 
 	{
 		int[] commandResponse=null;
 		
@@ -98,6 +112,10 @@ public class XbeeManager {
 		return true;
 	}
 
+	/**
+	 * Grab an instance of the singleton
+	 * @return
+	 */
 	public synchronized static XbeeManager getInstance()
 	{
 		if(instance==null)
@@ -108,6 +126,10 @@ public class XbeeManager {
 		return instance;
 	}
 	
+	/**
+	 * Send a Xbee message asynchronously. Method is thread-safe.
+	 * @param txRequest Transmission request
+	 */
 	public synchronized void sendAsyncRequest(TxRequest16 txRequest) 
 	{
 		if(!xbee.isConnected())
@@ -123,6 +145,12 @@ public class XbeeManager {
 		}
 	}
 	
+	/**
+	 * Send an Xbee message but wait for a response. Method is thread-safe.
+	 * @param txRequest16 Transmission request
+	 * @param timeout Timeout in milliseconds.
+	 * @return XbeeResponse for the message.
+	 */
 	public synchronized XBeeResponse sendSynchronousRequest(TxRequest16 txRequest16, int timeout)
 	{
 		if(!xbee.isConnected())
@@ -142,8 +170,10 @@ public class XbeeManager {
 	}
 	
 	/**
-	 * @param xbee
-	 * @param commandResponse
+	 * Send an AT command to the attached XBee. Method is thread-safe.
+	 * @param command AT Command to send.
+	 * @param args Command arguments.
+	 * @param timeout Timeout in milliseconds
 	 * @return
 	 */
 	public synchronized int[] sendATCommand(String command, int[] args, int timeout) 
