@@ -103,6 +103,19 @@ void loop()
         {
           Serial.println("Heartbeat"); 
         }
+        
+        if(LED_DEBUG==true)
+        {
+           digitalWrite(redPin,HIGH);
+           digitalWrite(greenPin,HIGH);
+           digitalWrite(bluePin,LOW);
+           
+           delay(50);
+           
+           digitalWrite(redPin,LOW);
+           digitalWrite(greenPin,LOW);
+          
+        }
       }
       else if(commandByte==SYSTEM_CHECK)
       {
