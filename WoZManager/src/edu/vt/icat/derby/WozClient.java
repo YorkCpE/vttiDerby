@@ -133,7 +133,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			lastArduinoEcho=lastCheckin;
 		}
 
-		System.out.println("Last heart from "+color+","+shape+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
+		//System.out.println("Last heart from "+color+","+shape+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
 	}
 	/**
 	 * Called when an echo message is received. Should respond with EchoAsk to hostname and port.
