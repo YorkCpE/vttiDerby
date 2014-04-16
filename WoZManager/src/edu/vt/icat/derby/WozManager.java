@@ -101,16 +101,16 @@ public class WozManager extends PApplet implements OscEventListener
 			}
 		}
 
-		//start up our other threads
-		
 		//give the ArduinoSender our queue so they can pass things over the network
 		new ArduinoSender(xbeeQueue).start();
 		
 		//give the HeartBeat monitor our hashmap so it can update times
 		new HeartbeatMonitor(allDerbyCars,carCheckin).start();
-		
+	
 		//give the Responder our queue so it can talk back to the WozClients
-		new HeartBeatResponder(heartBeatQueue, carCheckin).start();
+		//this guy takes too long to start up and we miss the processing loop....
+		new HeartBeatResponder(heartBeatQueue, carCheckin);
+
 	}
 
 	/**
@@ -211,10 +211,6 @@ public class WozManager extends PApplet implements OscEventListener
 		
 	}
 
-
-
-	
-
 	/**
 	 * Called every time an OSC message with the addr wozCommand is received. Processes the command.
 	 * @param payload Comma deliminated payload received from the network
@@ -247,6 +243,7 @@ public class WozManager extends PApplet implements OscEventListener
 	public void setup()
 	{
 		size(400,400);
+		background(0);
 	}
 
 	/**

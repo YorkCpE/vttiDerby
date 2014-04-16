@@ -34,6 +34,12 @@ public class HeartBeatResponder extends Thread
 	@Override
 	public void start()
 	{
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) 
+		{
+		}
+		
 		while(true)
 		{
 			HeartBeatResponseMessage request=null;
