@@ -42,6 +42,11 @@ public class WozManager extends PApplet implements OscEventListener
 	 * map between the XbeeName of a car and the DerbyCar Object
 	 */
 	private HashMap<String, DerbyCar> xbeeNameMap;
+	
+	/**
+	 * map between LicenseColor and LicensePlate to DerbyCar
+	 */
+	private HashMap<String, DerbyCar> shapeColorMap;
 
 	/**
 	 * Default listening port for the OSC Server
@@ -62,6 +67,18 @@ public class WozManager extends PApplet implements OscEventListener
 	 * Concurrent hashmap used by HeartBeat Monitor to exchange checkin information.
 	 */
 	private ConcurrentHashMap<DerbyCar, Long> carCheckin;
+
+	private int gridStartX;
+
+	private int gridStartY;
+
+	private int columnIncrement;
+
+	private int rowIncrement;
+
+	private int gridRows;
+
+	private int gridColumn;
 
 	public WozManager()
 	{
@@ -87,6 +104,8 @@ public class WozManager extends PApplet implements OscEventListener
 		arduinoNameMap = new HashMap<String, DerbyCar>();
 
 		xbeeNameMap = new HashMap<String, DerbyCar>();
+		
+		shapeColorMap = new HashMap<String, DerbyCar>();
 
 		//generate all derby cars
 		for(LicenseColor c : LicenseColor.values())
@@ -98,6 +117,7 @@ public class WozManager extends PApplet implements OscEventListener
 
 				arduinoNameMap.put(newCar.getArduinoName(), newCar);
 				xbeeNameMap.put(newCar.getXbeeName(), newCar);
+				shapeColorMap.put(c.toString()+s.toString(), newCar);
 			}
 		}
 
@@ -113,6 +133,16 @@ public class WozManager extends PApplet implements OscEventListener
 
 	}
 
+	/**
+	 * Returns the derby car object associated with this LicenseColor and LicenseShape
+	 * @param c LicenseColor
+	 * @param s LicenseShape
+	 * @return Derby car
+	 */
+	private DerbyCar getDerbyCar(LicenseColor c, LicenseShape s)
+	{
+		return shapeColorMap.get(c.toString()+s.toString());
+	}
 	/**
 	 * Called whenever an Heart Beat request is received.
 	 * @param sourceIP Source ip of the client sending the heart beat request
@@ -242,15 +272,77 @@ public class WozManager extends PApplet implements OscEventListener
 	 */
 	public void setup()
 	{
-		size(400,400);
+		size(800,600);
 		background(0);
+		
+		gridStartX = 0;
+		gridStartY = 0;
+		
+		int gridWidth=this.width;
+		int gridHeight=this.height/3*2; //take up 2/3 of the screen
+		
+		gridRows = LicenseShape.values().length;
+		gridColumn = LicenseColor.values().length;
+		
+		columnIncrement = gridWidth/gridColumn;
+		rowIncrement = 30;
 	}
 
+	private static final int DERBY_CAR_TIMEOUT=5000;
 	/**
 	 * Processing draw() loop
 	 */
 	public void draw()
 	{
+		background(0);
+		
+		textSize(16);
+		
+		//rows then columns
+		for(LicenseShape shape : LicenseShape.values())
+		{
+			int row = shape.ordinal();
+			for(LicenseColor color : LicenseColor.values())
+			{
+				int column=color.ordinal();
+				
+				DerbyCar car = getDerbyCar(color, shape);
+				
+				Object checkin = carCheckin.get(car);
+				
+				long timeStamp=-1;
+				if(checkin!=null)
+				{
+					timeStamp=(long) checkin;
+				}
+				
+				//determine time between when we last heard from the car
+				long delta = System.currentTimeMillis()-timeStamp;
+				boolean carLive=false;
+				
+				//determine if the car is alive or not
+				if(delta<DERBY_CAR_TIMEOUT)
+				{
+					carLive=true;
+				}
+				else
+				{
+					carLive=false;
+				}
+				
+				
+				if(carLive)
+				{
+					//print text for the car's name
+					textSize(10);
+					text(color.toString()+" "+shape.toString(),column*columnIncrement+20,row*rowIncrement+20);
+				}
+				else
+				{
+					//do nothing
+				}
+			}
+		}
 		
 	}
 

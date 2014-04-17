@@ -5,7 +5,7 @@ package edu.vt.icat.derby;
  * @author Jason Forsyth
  *
  */
-public class DerbyCar 
+public class DerbyCar
 {
 	
 	//list of license shapes in the derby
