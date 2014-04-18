@@ -130,7 +130,6 @@ public class WozManager extends PApplet implements OscEventListener
 		//give the Responder our queue so it can talk back to the WozClients
 		//this guy takes too long to start up and we miss the processing loop....
 		new HeartBeatResponder(heartBeatQueue, carCheckin).start();
-
 	}
 
 	/**

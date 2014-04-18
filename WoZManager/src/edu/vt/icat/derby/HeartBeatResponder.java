@@ -32,7 +32,7 @@ public class HeartBeatResponder extends Thread
 	}
 
 	@Override
-	public void start()
+	public void run()
 	{
 		try {
 			Thread.sleep(1000);
