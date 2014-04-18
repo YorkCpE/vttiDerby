@@ -221,6 +221,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 					public void controlEvent(ControlEvent arg0) 
 					{
 						checkArduinoConnection=true;
+						lastArduinoEcho=-1;
 					}
 				});
 
