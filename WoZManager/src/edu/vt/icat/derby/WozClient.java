@@ -62,6 +62,12 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 	//my IP address
 	private String myCurrentIP="";
+	
+	//wozmanager hostname
+	private String managerHostName=WozManager.DefaultHostName;
+	
+	//WoZManger listening port
+	private int managerListeningPort=WozManager.MANAGER_DEFAULT_LISTENING_PORT;
 
 	//my current port to listen on
 	private int myCurrentPort;
@@ -93,7 +99,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		}
 
 		//find address for WoZManager
-		wozManagerAddress = new NetAddress(WozManager.DefaultHostName,WozManager.MANAGER_DEFAULT_LISTENING_PORT);
+		wozManagerAddress = new NetAddress(managerHostName,managerListeningPort);
 
 		//send an echo to the WoZManager
 		sendEcho(wozManagerAddress);
@@ -261,6 +267,25 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			ListBoxItem lbi = carShapeListBox.addItem(shape.toString(), shape.ordinal());
 			lbi.setColorBackground(0xffff0000);
 		}
+		
+		cp5.addTextfield("Host IP")
+	     .setPosition(10,525)
+	     .setSize(100,40)
+	     .setFocus(true)
+	     .setFont(createFont("arial",20))
+	     .setColor(color(255,0,0))
+	     .addListener(new ControlListener() {
+			
+			@Override
+			public void controlEvent(ControlEvent arg0) 
+			{
+				String newHostIP=arg0.getStringValue();
+				System.out.println("Host IP Set to "+newHostIP);
+				
+				wozManagerAddress = new NetAddress(newHostIP, managerListeningPort);
+			}
+		})
+	     ;
 
 	}
 
