@@ -276,7 +276,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	     .setColor(color(255,0,0))
 	     .addListener(new ControlListener() {
 			
-			@Override
+			//@Override
 			public void controlEvent(ControlEvent arg0) 
 			{
 				String newHostIP=arg0.getStringValue();
