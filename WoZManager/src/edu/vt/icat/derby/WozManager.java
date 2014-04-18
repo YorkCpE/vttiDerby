@@ -245,7 +245,7 @@ public class WozManager extends PApplet implements OscEventListener
 	 * @param payload Comma deliminated payload received from the network
 	 */
 
-	@Override
+	//@Override
 	public void oscEvent(OscMessage theMessage) 
 	{
 		if(theMessage.isPlugged())
@@ -259,7 +259,7 @@ public class WozManager extends PApplet implements OscEventListener
 
 	}
 
-	@Override
+	//@Override
 	public void oscStatus(OscStatus theStatus) 
 	{
 
@@ -312,7 +312,7 @@ public class WozManager extends PApplet implements OscEventListener
 				long timeStamp=-1;
 				if(checkin!=null)
 				{
-					timeStamp=(long) checkin;
+					timeStamp=(Long) checkin;
 				}
 				
 				//determine time between when we last heard from the car
