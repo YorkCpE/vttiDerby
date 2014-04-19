@@ -77,7 +77,7 @@ public class HeartBeatResponder extends Thread
 			NetAddress destination = new NetAddress(hostname, port);
 
 			oscMessage.add(WozManager.DefaultHostName);
-			oscMessage.add(WozManager.MANAGER_DEFAULT_LISTENING_PORT);
+			oscMessage.add(WozManager.DEFAULT_LISTENING_PORT);
 			oscMessage.add(args);
 
 			//send it asynchronously

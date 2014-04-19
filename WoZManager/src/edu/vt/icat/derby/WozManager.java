@@ -1,8 +1,10 @@
 package edu.vt.icat.derby;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -51,7 +53,7 @@ public class WozManager extends PApplet implements OscEventListener
 	/**
 	 * Default listening port for the OSC Server
 	 */
-	public static final int MANAGER_DEFAULT_LISTENING_PORT=3944;
+	public static final int DEFAULT_LISTENING_PORT=3944;
 
 	/**
 	 * Concurrent queue to send commands over the Xbee network. Queue is read by the XbeeManager
@@ -67,6 +69,11 @@ public class WozManager extends PApplet implements OscEventListener
 	 * Concurrent hashmap used by HeartBeat Monitor to exchange checkin information.
 	 */
 	private ConcurrentHashMap<DerbyCar, Long> carCheckin;
+	
+	/**
+	 * List of active WoZ Clients
+	 */
+	private Set<NetAddress> activeClients;
 
 	private int gridStartX;
 
@@ -85,10 +92,11 @@ public class WozManager extends PApplet implements OscEventListener
 		//create the OSC server and plug all the relevant messages
 		//a plugged message will automatically be called when it is received
 		//the function name must match exactly
-		server = new OscP5(this, MANAGER_DEFAULT_LISTENING_PORT);
+		server = new OscP5(this, DEFAULT_LISTENING_PORT);
 		server.plug(this,"receiveEcho",WozControlMessage.ECHO);
 		server.plug(this,"receiveEchoAck",WozControlMessage.ECHO_ACK);
 		server.plug(this, "heartBeat", WozControlMessage.HEARTBEAT);
+		server.plug(this, "receiveClientRegistration",WozControlMessage.REGISTRATION);
 
 		server.plug(this, "collisionWarning", WoZCommand.COLLISION_WARNING);
 		server.plug(this, "laneViolation", WoZCommand.LANE_VIOLATION);
@@ -106,6 +114,8 @@ public class WozManager extends PApplet implements OscEventListener
 		xbeeNameMap = new HashMap<String, DerbyCar>();
 		
 		shapeColorMap = new HashMap<String, DerbyCar>();
+		
+		activeClients = new HashSet<NetAddress>();
 
 		//generate all derby cars
 		for(LicenseColor c : LicenseColor.values())
@@ -132,6 +142,27 @@ public class WozManager extends PApplet implements OscEventListener
 		new HeartBeatResponder(heartBeatQueue, carCheckin).start();
 		
 		System.out.println("OSC Server Running on "+ server.ip());
+	}
+	
+	public void receiveClientRegistration(String clientIP, int clientPort, String args)
+	{
+		NetAddress newClient = new NetAddress(clientIP, clientPort);
+		
+		if(!newClient.isvalid())
+		{
+			return;
+		}
+		else
+		{
+			System.out.println("Received Client Registration from "+newClient.toString());
+		}
+		
+		activeClients.add(newClient);
+		
+		WozControlMessage registrationAck = 
+				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), DEFAULT_LISTENING_PORT, "");
+		
+		OscP5.flush(registrationAck.generateOscMessage(), newClient);
 	}
 
 	/**
@@ -225,7 +256,7 @@ public class WozManager extends PApplet implements OscEventListener
 	public void receiveEcho(String sourceIP, int sourcePort, String args)
 	{
 		//send response directly
-		WozControlMessage echoAck = new WozControlMessage(WozControlMessage.ECHO_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
+		WozControlMessage echoAck = new WozControlMessage(WozControlMessage.ECHO_ACK, server.ip(), DEFAULT_LISTENING_PORT, "");
 		NetAddress destinationAddress = new NetAddress(sourceIP, sourcePort);
 		server.send(echoAck.generateOscMessage(), destinationAddress);
 	}
