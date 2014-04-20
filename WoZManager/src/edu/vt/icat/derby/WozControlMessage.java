@@ -17,6 +17,9 @@ public class WozControlMessage
 	
 	public static final String HARDWAREUPDATE="/hardwareUpdate";
 	
+	public static final String REGISTRATION="/registration";
+	public static final String REGISTRATION_ACK="/registrationAck";
+	
 	private String messageType;
 	private String sourceIP;
 	private int sourcePort;
