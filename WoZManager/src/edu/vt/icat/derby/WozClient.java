@@ -262,7 +262,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				.setPosition(checkArduinoButton.getAbsolutePosition().x,350)
 				.addListener(new ControlListener() {
 					
-					@Override
+					//@Override
 					public void controlEvent(ControlEvent arg0) 
 					{
 						attemptManagerRegistration();
