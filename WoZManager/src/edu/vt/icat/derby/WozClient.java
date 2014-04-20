@@ -75,6 +75,8 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private Button checkArduinoButton;
 	private boolean checkArduinoConnection=false;
 
+	private Button managerDHCP;
+
 	//maximum time allowed between Arduino echos, will be considered
 	//disconnected if violated
 	private static final int ARDUINO_TIMEOUT=10000;
@@ -253,6 +255,17 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 					{
 						checkArduinoConnection=true;
 						lastArduinoEcho=-1;
+					}
+				});
+		
+		managerDHCP = cp5.addButton("DHCP")
+				.setPosition(checkArduinoButton.getAbsolutePosition().x,350)
+				.addListener(new ControlListener() {
+					
+					@Override
+					public void controlEvent(ControlEvent arg0) 
+					{
+						attemptManagerRegistration();
 					}
 				});
 
