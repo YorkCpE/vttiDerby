@@ -1,6 +1,7 @@
 package edu.vt.icat.derby;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -91,6 +92,8 @@ public class WozManager extends PApplet implements OscEventListener
 	//Need to set this in the GUI for each group change
 	public int groupNumber = 0;
 
+	private String myIp;
+
 	public WozManager()
 	{
 		
@@ -109,6 +112,8 @@ public class WozManager extends PApplet implements OscEventListener
 		server.plug(this, "collisionWarning", WoZCommand.COLLISION_WARNING);
 		server.plug(this, "laneViolation", WoZCommand.LANE_VIOLATION);
 		server.plug(this, "lapStartStop", WoZCommand.LAP_STARTSTOP);
+		
+		myIp=server.ip();
 
 		xbeeQueue = new LinkedBlockingQueue<WoZCommand>();
 		heartBeatQueue = new LinkedBlockingQueue<HeartBeatResponseMessage>();
@@ -122,6 +127,8 @@ public class WozManager extends PApplet implements OscEventListener
 		xbeeNameMap = new HashMap<String, DerbyCar>();
 		
 		shapeColorMap = new HashMap<String, DerbyCar>();
+		
+		activeClients = new HashSet<NetAddress>();
 
 		//generate all derby cars
 		for(LicenseColor c : LicenseColor.values())
@@ -163,6 +170,8 @@ public class WozManager extends PApplet implements OscEventListener
 			System.out.println("Received Client Registration from "+newClient.toString());
 		}
 
+		activeClients.add(newClient);
+		
 		WozControlMessage registrationAck = 
 				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
 
@@ -393,6 +402,7 @@ public class WozManager extends PApplet implements OscEventListener
 			}
 		}
 		
+		text(myIp,10,(float) (height*.9));
 	}
 
 	/**
