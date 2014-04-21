@@ -1,10 +1,5 @@
 package edu.vt.icat.derby;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -14,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import netP5.NetAddress;
-import netP5.NetInfo;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
 import oscP5.OscP5;
@@ -317,8 +311,8 @@ public class WozManager extends PApplet implements OscEventListener
 		size(800,600);
 		background(0);
 
-		gridStartX = 0;
-		gridStartY = 0;
+		gridStartX = 10;
+		gridStartY = 20;
 
 		int gridWidth=this.width;
 		int gridHeight=this.height/3*2; //take up 2/3 of the screen
@@ -378,7 +372,7 @@ public class WozManager extends PApplet implements OscEventListener
 				if(carLive)
 				{
 					//print text for the car's name
-					textSize(10);
+					//textSize(10);
 					text(color.toString()+" "+shape.toString(),column*columnIncrement+gridStartX,row*rowIncrement+gridStartY);
 				}
 				else
