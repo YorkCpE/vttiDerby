@@ -84,6 +84,8 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	//Start/Stop timestamp to send laptime
 	private Date startStopDate = null;
 
+	private Button managerDHCP;
+
 	public WozClient() 
 	{
 		//establish connection with WoZManager
@@ -107,7 +109,8 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		wozManagerAddress = new NetAddress(managerHostName,managerListeningPort);
 
 		//send an echo to the WoZManager
-		sendEcho(wozManagerAddress);
+		//sendEcho(wozManagerAddress);
+		attemptManagerRegistration();
 
 		//set our default shape and color
 		currentShape = LicenseShape.Circle;
@@ -258,6 +261,18 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				.setColorActive(color(0))
 				.setColorForeground(color(255, 100,0))
 				;
+		
+
+		managerDHCP = cp5.addButton("DHCP")
+				.setPosition(checkArduinoButton.getAbsolutePosition().x,350)
+				.addListener(new ControlListener() {
+					
+					@Override
+					public void controlEvent(ControlEvent arg0) 
+					{
+						attemptManagerRegistration();
+					}
+				});
 
 		//add all the colors to the listbox
 		for(LicenseColor color : LicenseColor.values())
@@ -292,6 +307,29 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		})
 	     ;
 
+	}
+	
+	private void attemptManagerRegistration()
+	{
+		connectedToWoZManager=false;
+		
+		WozControlMessage registration = new WozControlMessage(WozControlMessage.REGISTRATION, myCurrentIP, myCurrentPort, "");
+		
+		OscP5.flush(registration.generateOscMessage(), new NetAddress("255.255.255.255", WozManager.MANAGER_DEFAULT_LISTENING_PORT));
+	}
+	
+	public void receiveRegistrationAck(String managerIP, int managerPort, String args)
+	{
+		NetAddress manager = new NetAddress(managerIP, managerPort);
+		
+		if(!manager.isvalid())
+		{
+			return;
+		}
+		
+		wozManagerAddress=manager;
+		connectedToWoZManager=true;
+		lastManagerEcho=System.currentTimeMillis();
 	}
 
 	/**
