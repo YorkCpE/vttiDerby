@@ -330,8 +330,14 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		Date now = new Date();
 		if(startStopDate != null){
 			
+			
 			laptime = Math.abs(startStopDate.getTime() - now.getTime()) / 1000;
 			
+			
+		}
+		else
+		{
+			startStopDate=new Date();
 		}
 		
 		//send OSC message

@@ -297,8 +297,8 @@ public class WozManager extends PApplet implements OscEventListener
 		size(800,600);
 		background(0);
 		
-		gridStartX = 0;
-		gridStartY = 0;
+		gridStartX = 10;
+		gridStartY = 20;
 		
 		int gridWidth=this.width;
 		int gridHeight=this.height/3*2; //take up 2/3 of the screen
@@ -356,7 +356,7 @@ public class WozManager extends PApplet implements OscEventListener
 				if(carLive)
 				{
 					//print text for the car's name
-					textSize(10);
+					//textSize(10);
 					text(color.toString()+" "+shape.toString(),column*columnIncrement+20,row*rowIncrement+20);
 				}
 				else
