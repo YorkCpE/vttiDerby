@@ -67,15 +67,13 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private String managerHostName=WozManager.DefaultHostName;
 	
 	//WoZManger listening port
-	private int managerListeningPort=WozManager.DEFAULT_LISTENING_PORT;
+	private int managerListeningPort=WozManager.MANAGER_DEFAULT_LISTENING_PORT;
 
 	//my current port to listen on
 	private int myCurrentPort;
 
 	private Button checkArduinoButton;
 	private boolean checkArduinoConnection=false;
-
-	private Button managerDHCP;
 
 	//maximum time allowed between Arduino echos, will be considered
 	//disconnected if violated
@@ -92,7 +90,6 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		localHost.plug(this, "receiveEcho", WozControlMessage.ECHO);
 		localHost.plug(this, "receiveEchoAck", WozControlMessage.ECHO_ACK);
 		localHost.plug(this, "receiveHeartBeatAck", WozControlMessage.HEARTBEAT_ACK);
-		localHost.plug(this, "receiveRegistrationAck", WozControlMessage.REGISTRATION_ACK);
 
 		//sleep so everything has time to setup
 		try {
@@ -105,35 +102,11 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		wozManagerAddress = new NetAddress(managerHostName,managerListeningPort);
 
 		//send an echo to the WoZManager
-		//sendEcho(wozManagerAddress);
-		attemptManagerRegistration();
+		sendEcho(wozManagerAddress);
 
 		//set our default shape and color
 		currentShape = LicenseShape.Circle;
 		currentColor = LicenseColor.Black;
-	}
-	
-	private void attemptManagerRegistration()
-	{
-		connectedToWoZManager=false;
-		
-		WozControlMessage registration = new WozControlMessage(WozControlMessage.REGISTRATION, myCurrentIP, myCurrentPort, "");
-		
-		OscP5.flush(registration.generateOscMessage(), new NetAddress("255.255.255.255", WozManager.DEFAULT_LISTENING_PORT));
-	}
-	
-	public void receiveRegistrationAck(String managerIP, int managerPort, String args)
-	{
-		NetAddress manager = new NetAddress(managerIP, managerPort);
-		
-		if(!manager.isvalid())
-		{
-			return;
-		}
-		
-		wozManagerAddress=manager;
-		connectedToWoZManager=true;
-		lastManagerEcho=System.currentTimeMillis();
 	}
 
 	/**
@@ -257,17 +230,6 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 						lastArduinoEcho=-1;
 					}
 				});
-		
-		managerDHCP = cp5.addButton("DHCP")
-				.setPosition(checkArduinoButton.getAbsolutePosition().x,350)
-				.addListener(new ControlListener() {
-					
-					@Override
-					public void controlEvent(ControlEvent arg0) 
-					{
-						attemptManagerRegistration();
-					}
-				});
 
 
 		//create the listbox that holds all the license plate colors
@@ -331,7 +293,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	 * Send an Echo over OSC to some destination
 	 * @param destination
 	 */
-	private void sendEcho(NetAddress destination) 
+	public void sendEcho(NetAddress destination) 
 	{
 		WozControlMessage echo = new WozControlMessage(WozControlMessage.ECHO, myCurrentIP, myCurrentPort, "");
 		localHost.send(echo.generateOscMessage(),destination);
