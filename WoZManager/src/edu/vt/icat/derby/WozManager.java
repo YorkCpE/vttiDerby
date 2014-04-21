@@ -85,9 +85,9 @@ public class WozManager extends PApplet implements OscEventListener
 
 	private int rowIncrement;
 
-	private int gridRows;
+	private int numRows;
 
-	private int gridColumn;
+	private int numColumns;
 	
 	//Need to set this in the GUI for each group change
 	public int groupNumber = 0;
@@ -338,11 +338,11 @@ public class WozManager extends PApplet implements OscEventListener
 		int gridWidth=this.width;
 		int gridHeight=this.height/3*2; //take up 2/3 of the screen
 		
-		gridRows = LicenseShape.values().length;
-		gridColumn = LicenseColor.values().length;
+		numRows = LicenseShape.values().length;
+		numColumns = LicenseColor.values().length;
 		
-		columnIncrement = gridWidth/gridColumn;
-		rowIncrement = 30;
+		columnIncrement = gridWidth/numColumns;
+		rowIncrement = gridHeight/numRows;
 	}
 
 	private static final int DERBY_CAR_TIMEOUT=5000;
