@@ -81,6 +81,9 @@ public class WozManager extends PApplet implements OscEventListener
 	private int gridRows;
 
 	private int gridColumn;
+	
+	//Need to set this in the GUI for each group change
+	public int groupNumber = 0;
 
 	public WozManager()
 	{
@@ -216,6 +219,18 @@ public class WozManager extends PApplet implements OscEventListener
 		if(splits.length>2)
 		{
 			return;
+		}
+		
+		//Get laptime from args and add to ParseDB
+		long laptime = Long.parseLong(args);
+		if(laptime > 0){
+			
+			ParseObject lapObject = new ParseObject("Lap");
+			lapObject.put("color", splits[0]);
+			lapObject.put("shape", splits[1]);
+			lapObject.put("time", laptime);
+			lapObject.put("group", groupNumber);
+			lapObject.saveInBackground();
 		}
 
 		//pass off command to the Arduino sender
