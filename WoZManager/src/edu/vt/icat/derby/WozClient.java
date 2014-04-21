@@ -1,5 +1,7 @@
 package edu.vt.icat.derby;
 
+import java.util.Date;
+
 import netP5.NetAddress;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
@@ -78,6 +80,9 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	//maximum time allowed between Arduino echos, will be considered
 	//disconnected if violated
 	private static final int ARDUINO_TIMEOUT=10000;
+	
+	//Start/Stop timestamp to send laptime
+	private Date startStopDate = null;
 
 	public WozClient() 
 	{
@@ -320,8 +325,17 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	 */
 	private void sendLapStartStop() 
 	{
+		//Get lap time, send -1 if first lap
+		long laptime = -1;
+		Date now = new Date();
+		if(startStopDate != null){
+			
+			laptime = Math.abs(startStopDate.getTime() - now.getTime()) / 1000;
+			
+		}
+		
 		//send OSC message
-		WoZCommand lapStartStop = new WoZCommand(currentColor,currentShape,WoZCommand.LAP_STARTSTOP,"");
+		WoZCommand lapStartStop = new WoZCommand(currentColor,currentShape,WoZCommand.LAP_STARTSTOP,String.valueOf(laptime));
 		localHost.send(lapStartStop.generateOscMessage(), wozManagerAddress);
 
 		if(enableLocalXbee)
