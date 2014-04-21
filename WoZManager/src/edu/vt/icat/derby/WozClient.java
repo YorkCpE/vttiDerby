@@ -1,5 +1,7 @@
 package edu.vt.icat.derby;
 
+import java.util.Date;
+
 import netP5.NetAddress;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
@@ -67,7 +69,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private String managerHostName=WozManager.DefaultHostName;
 	
 	//WoZManger listening port
-	private int managerListeningPort=WozManager.DEFAULT_LISTENING_PORT;
+	private int managerListeningPort=WozManager.MANAGER_DEFAULT_LISTENING_PORT;
 
 	//my current port to listen on
 	private int myCurrentPort;
@@ -75,11 +77,14 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private Button checkArduinoButton;
 	private boolean checkArduinoConnection=false;
 
-	private Button managerDHCP;
-
 	//maximum time allowed between Arduino echos, will be considered
 	//disconnected if violated
 	private static final int ARDUINO_TIMEOUT=10000;
+	
+	//Start/Stop timestamp to send laptime
+	private Date startStopDate = null;
+
+	private Button managerDHCP;
 
 	public WozClient() 
 	{
@@ -92,7 +97,6 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		localHost.plug(this, "receiveEcho", WozControlMessage.ECHO);
 		localHost.plug(this, "receiveEchoAck", WozControlMessage.ECHO_ACK);
 		localHost.plug(this, "receiveHeartBeatAck", WozControlMessage.HEARTBEAT_ACK);
-		localHost.plug(this, "receiveRegistrationAck", WozControlMessage.REGISTRATION_ACK);
 
 		//sleep so everything has time to setup
 		try {
@@ -105,35 +109,11 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		wozManagerAddress = new NetAddress(managerHostName,managerListeningPort);
 
 		//send an echo to the WoZManager
-		//sendEcho(wozManagerAddress);
-		attemptManagerRegistration();
+		sendEcho(wozManagerAddress);
 
 		//set our default shape and color
 		currentShape = LicenseShape.Circle;
 		currentColor = LicenseColor.Black;
-	}
-	
-	private void attemptManagerRegistration()
-	{
-		connectedToWoZManager=false;
-		
-		WozControlMessage registration = new WozControlMessage(WozControlMessage.REGISTRATION, myCurrentIP, myCurrentPort, "");
-		
-		OscP5.flush(registration.generateOscMessage(), new NetAddress("255.255.255.255", WozManager.DEFAULT_LISTENING_PORT));
-	}
-	
-	public void receiveRegistrationAck(String managerIP, int managerPort, String args)
-	{
-		NetAddress manager = new NetAddress(managerIP, managerPort);
-		
-		if(!manager.isvalid())
-		{
-			return;
-		}
-		
-		wozManagerAddress=manager;
-		connectedToWoZManager=true;
-		lastManagerEcho=System.currentTimeMillis();
 	}
 
 	/**
@@ -257,6 +237,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 						lastArduinoEcho=-1;
 					}
 				});
+
 		
 		managerDHCP = cp5.addButton("DHCP")
 				.setPosition(checkArduinoButton.getAbsolutePosition().x,350)
@@ -268,6 +249,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 						attemptManagerRegistration();
 					}
 				});
+
 
 
 		//create the listbox that holds all the license plate colors
@@ -327,11 +309,16 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 	}
 
+	private void attemptManagerRegistration() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	/**
 	 * Send an Echo over OSC to some destination
 	 * @param destination
 	 */
-	private void sendEcho(NetAddress destination) 
+	public void sendEcho(NetAddress destination) 
 	{
 		WozControlMessage echo = new WozControlMessage(WozControlMessage.ECHO, myCurrentIP, myCurrentPort, "");
 		localHost.send(echo.generateOscMessage(),destination);
@@ -358,8 +345,23 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	 */
 	private void sendLapStartStop() 
 	{
+		//Get lap time, send -1 if first lap
+		long laptime = -1;
+		Date now = new Date();
+		if(startStopDate != null){
+			
+			
+			laptime = Math.abs(startStopDate.getTime() - now.getTime()) / 1000;
+			
+			
+		}
+		else
+		{
+			startStopDate=new Date();
+		}
+		
 		//send OSC message
-		WoZCommand lapStartStop = new WoZCommand(currentColor,currentShape,WoZCommand.LAP_STARTSTOP,"");
+		WoZCommand lapStartStop = new WoZCommand(currentColor,currentShape,WoZCommand.LAP_STARTSTOP,String.valueOf(laptime));
 		localHost.send(lapStartStop.generateOscMessage(), wozManagerAddress);
 
 		if(enableLocalXbee)

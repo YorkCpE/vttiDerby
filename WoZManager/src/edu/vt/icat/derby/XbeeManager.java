@@ -66,24 +66,26 @@ public class XbeeManager {
 			{
 				xbee.open(port, 9600);
 				xbeeConnected=checkNodeIdentifier(xbee);
+			} catch (XBeeException e) 
+			{
 				
-				if(!xbeeConnected)
-				{
-					xbee.close();
-				}
-				
-			} catch (XBeeException e) {}
+			}
 
 			if(xbeeConnected)
 			{
 				System.out.println("XbeeManager: acquiring serial port "+port);
 				break;
 			}
+			else
+			{
+				
+			}
 		}
 
 		if(!xbeeConnected)
 		{
 			System.out.println("XbeeManager couldn't establish connection with the Xbee!!");
+			xbee.close();
 		}
 
 
