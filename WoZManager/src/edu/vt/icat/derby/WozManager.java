@@ -3,6 +3,7 @@ package edu.vt.icat.derby;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -70,6 +71,11 @@ public class WozManager extends PApplet implements OscEventListener
 	 */
 	private ConcurrentHashMap<DerbyCar, Long> carCheckin;
 
+	/**
+	 * List of active WoZ Clients
+	 */
+	private Set<NetAddress> activeClients;
+
 	private int gridStartX;
 
 	private int gridStartY;
@@ -98,6 +104,7 @@ public class WozManager extends PApplet implements OscEventListener
 		server.plug(this,"receiveEcho",WozControlMessage.ECHO);
 		server.plug(this,"receiveEchoAck",WozControlMessage.ECHO_ACK);
 		server.plug(this, "heartBeat", WozControlMessage.HEARTBEAT);
+		server.plug(this, "receiveClientRegistration",WozControlMessage.REGISTRATION);
 
 		server.plug(this, "collisionWarning", WoZCommand.COLLISION_WARNING);
 		server.plug(this, "laneViolation", WoZCommand.LANE_VIOLATION);
@@ -141,6 +148,25 @@ public class WozManager extends PApplet implements OscEventListener
 		new HeartBeatResponder(heartBeatQueue, carCheckin).start();
 		
 		System.out.println("OSC Server Running on "+ server.ip());
+	}
+	
+	public void receiveClientRegistration(String clientIP, int clientPort, String args)
+	{
+		NetAddress newClient = new NetAddress(clientIP, clientPort);
+
+		if(!newClient.isvalid())
+		{
+			return;
+		}
+		else
+		{
+			System.out.println("Received Client Registration from "+newClient.toString());
+		}
+
+		WozControlMessage registrationAck = 
+				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
+
+		OscP5.flush(registrationAck.generateOscMessage(), newClient);
 	}
 
 	/**

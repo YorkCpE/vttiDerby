@@ -97,6 +97,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		localHost.plug(this, "receiveEcho", WozControlMessage.ECHO);
 		localHost.plug(this, "receiveEchoAck", WozControlMessage.ECHO_ACK);
 		localHost.plug(this, "receiveHeartBeatAck", WozControlMessage.HEARTBEAT_ACK);
+		localHost.plug(this, "receiveRegistrationAck", WozControlMessage.REGISTRATION_ACK);
 
 		//sleep so everything has time to setup
 		try {
