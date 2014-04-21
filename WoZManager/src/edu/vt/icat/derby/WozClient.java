@@ -85,6 +85,8 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private Date startStopDate = null;
 
 	private Button managerDHCP;
+	
+	private boolean registredWithManager=false;
 
 	public WozClient() 
 	{
@@ -331,6 +333,9 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		wozManagerAddress=manager;
 		connectedToWoZManager=true;
 		lastManagerEcho=System.currentTimeMillis();
+		registredWithManager=true;
+		
+		System.out.println("Client Registered with Manager");
 	}
 
 	/**
@@ -419,10 +424,18 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		textSize(16);
 
 		//determine if we've heard from the Manager lately
-		if(Math.abs(System.currentTimeMillis()-lastManagerEcho)>10000)
+		long lastManagerDelta=Math.abs(System.currentTimeMillis()-lastManagerEcho);
+		if(lastManagerDelta>10000)
 		{
 			connectedToWoZManager=false;
-			sendEcho(wozManagerAddress);
+			if(registredWithManager==false)
+			{
+				attemptManagerRegistration();
+			}
+			else
+			{
+				sendEcho(wozManagerAddress);
+			}
 		}
 
 		//determine if we've heard from the Arduino lately
