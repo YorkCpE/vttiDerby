@@ -392,7 +392,6 @@ public class WozManager extends PApplet implements OscEventListener
 				{
 					//print text for the car's name
 					//textSize(10);
-					text(color.toString()+" "+shape.toString(),column*columnIncrement+20,row*rowIncrement+20);
 					text(color.toString()+" "+shape.toString(),column*columnIncrement+gridStartX,row*rowIncrement+gridStartY);
 				}
 				else
