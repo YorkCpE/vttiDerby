@@ -19,15 +19,20 @@ import edu.vt.icat.derby.DerbyCar.LicenseShape;
 
 import org.parse4j.*;
 
+import controlP5.ControlEvent;
+import controlP5.ControlListener;
+import controlP5.ControlP5;
+import controlP5.Textfield;
+
 /**
  * WoZManager manages communication between the WoZClients, the Arduinos via Xbee, and forwards information to the Scoreboard.
  * @author Jason Forsyth
  *
  */
-public class WozManager extends PApplet implements OscEventListener
+public class WozManager extends PApplet implements OscEventListener,ControlListener
 {
 	private static final long serialVersionUID = 1149760259465655755L;
-	
+
 	/**
 	 * hostname for the OSC server. Should be set to a real host name if deployed.
 	 */
@@ -46,7 +51,7 @@ public class WozManager extends PApplet implements OscEventListener
 	 * map between the XbeeName of a car and the DerbyCar Object
 	 */
 	private HashMap<String, DerbyCar> xbeeNameMap;
-	
+
 	/**
 	 * map between LicenseColor and LicensePlate to DerbyCar
 	 */
@@ -66,7 +71,7 @@ public class WozManager extends PApplet implements OscEventListener
 	 * Concurrent queue to send Heartbeat commands
 	 */
 	private LinkedBlockingQueue<HeartBeatResponseMessage> heartBeatQueue;
-	
+
 	/**
 	 * Concurrent hashmap used by HeartBeat Monitor to exchange checkin information.
 	 */
@@ -88,18 +93,30 @@ public class WozManager extends PApplet implements OscEventListener
 	private int numRows;
 
 	private int numColumns;
+
+
+
+	/**
+	 * IP address of the OSC server
+	 */
+	private String myIp;
+
+	/**
+	 * GUI controller for ControlP5
+	 */
+	private ControlP5 gui;
 	
 	//Need to set this in the GUI for each group change
-	public int groupNumber = 0;
-
-	private String myIp;
+	private int currentGroupNumber = 0;
+	
+	private Textfield currentGroupTextField;
 
 	public WozManager()
 	{
-		
+
 		//Setup Parse
 		Parse.initialize("x1fyYxbICQaevIesJPAHYnahjSkAySmfnXpgGWez", "SGJ5K3IyP5tAAg6B0L6bVeajHE5HvwwgrC2zik12");
-		
+
 		//create the OSC server and plug all the relevant messages
 		//a plugged message will automatically be called when it is received
 		//the function name must match exactly
@@ -112,7 +129,7 @@ public class WozManager extends PApplet implements OscEventListener
 		server.plug(this, "collisionWarning", WoZCommand.COLLISION_WARNING);
 		server.plug(this, "laneViolation", WoZCommand.LANE_VIOLATION);
 		server.plug(this, "lapStartStop", WoZCommand.LAP_STARTSTOP);
-		
+
 		myIp=server.ip();
 
 		xbeeQueue = new LinkedBlockingQueue<WoZCommand>();
@@ -125,9 +142,9 @@ public class WozManager extends PApplet implements OscEventListener
 		arduinoNameMap = new HashMap<String, DerbyCar>();
 
 		xbeeNameMap = new HashMap<String, DerbyCar>();
-		
+
 		shapeColorMap = new HashMap<String, DerbyCar>();
-		
+
 		activeClients = new HashSet<NetAddress>();
 
 		//generate all derby cars
@@ -146,17 +163,17 @@ public class WozManager extends PApplet implements OscEventListener
 
 		//give the ArduinoSender our queue so they can pass things over the network
 		new ArduinoSender(xbeeQueue).start();
-		
+
 		//give the HeartBeat monitor our hashmap so it can update times
 		new HeartbeatMonitor(allDerbyCars,carCheckin).start();
-	
+
 		//give the Responder our queue so it can talk back to the WozClients
 		//this guy takes too long to start up and we miss the processing loop....
 		new HeartBeatResponder(heartBeatQueue, carCheckin).start();
-		
+
 		System.out.println("OSC Server Running on "+ server.ip());
 	}
-	
+
 	public void receiveClientRegistration(String clientIP, int clientPort, String args)
 	{
 		NetAddress newClient = new NetAddress(clientIP, clientPort);
@@ -171,7 +188,7 @@ public class WozManager extends PApplet implements OscEventListener
 		}
 
 		activeClients.add(newClient);
-		
+
 		WozControlMessage registrationAck = 
 				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
 
@@ -199,7 +216,7 @@ public class WozManager extends PApplet implements OscEventListener
 		DerbyCar car = arduinoNameMap.get(args);
 
 		heartBeatQueue.add(new HeartBeatResponseMessage(sourceIP, sourcePort, car));
-		
+
 		//Note: for some reason we can't access the Checkin hashmap directly. There is some conflict
 		//in the OscP5 library that gets pissy with cross thread access.
 	}
@@ -255,16 +272,16 @@ public class WozManager extends PApplet implements OscEventListener
 		{
 			return;
 		}
-		
+
 		//Get laptime from args and add to ParseDB
 		long laptime = Long.parseLong(args);
 		if(laptime > 0){
-			
+
 			ParseObject lapObject = new ParseObject("Lap");
 			lapObject.put("color", splits[0]);
 			lapObject.put("shape", splits[1]);
 			lapObject.put("time", laptime);
-			lapObject.put("group", groupNumber);
+			lapObject.put("group", currentGroupNumber);
 			lapObject.saveInBackground();
 		}
 
@@ -295,7 +312,7 @@ public class WozManager extends PApplet implements OscEventListener
 
 	public void receiveEchoAck(String sourceIP, int sourcePort, String args)
 	{
-		
+
 	}
 
 	/**
@@ -331,30 +348,67 @@ public class WozManager extends PApplet implements OscEventListener
 	{
 		size(800,600);
 		background(0);
-		
+
 		gridStartX = 10;
 		gridStartY = 20;
 
 		int gridWidth=this.width;
 		int gridHeight=this.height/3*2; //take up 2/3 of the screen
-		
+
 		numRows = LicenseShape.values().length;
 		numColumns = LicenseColor.values().length;
-		
+
 		columnIncrement = gridWidth/numColumns;
 		rowIncrement = gridHeight/numRows;
+
+
+		//initialize the GUI manager
+		gui = new ControlP5(this);
+
+		currentGroupTextField = gui.addTextfield("Current Group")
+				.setPosition(10,(float) (height*.75))
+				.setSize(40,40)
+				.setFocus(true)
+				.setFont(createFont("arial",20))
+				.setColor(color(255,0,0))
+				.addListener(new ControlListener() {
+
+					@Override
+					public void controlEvent(ControlEvent arg0) 
+					{
+						String text=arg0.getStringValue();
+
+						int value=-1;
+						try
+						{
+							value = new Integer(text);
+						}
+						catch (Exception e)
+						{
+
+						}
+						
+						if(value<=0)
+						{
+							return;
+						}
+						
+						currentGroupNumber=value;
+					}
+				});
 	}
 
 	private static final int DERBY_CAR_TIMEOUT=5000;
+
 	/**
 	 * Processing draw() loop
 	 */
 	public void draw()
 	{
 		background(0);
-		
+
 		textSize(16);
-		
+
 		//rows then columns
 		for(LicenseShape shape : LicenseShape.values())
 		{
@@ -362,21 +416,21 @@ public class WozManager extends PApplet implements OscEventListener
 			for(LicenseColor color : LicenseColor.values())
 			{
 				int column=color.ordinal();
-				
+
 				DerbyCar car = getDerbyCar(color, shape);
-				
+
 				Object checkin = carCheckin.get(car);
-				
+
 				long timeStamp=-1;
 				if(checkin!=null)
 				{
 					timeStamp=(long) checkin;
 				}
-				
+
 				//determine time between when we last heard from the car
 				long delta = System.currentTimeMillis()-timeStamp;
 				boolean carLive=false;
-				
+
 				//determine if the car is alive or not
 				if(delta<DERBY_CAR_TIMEOUT)
 				{
@@ -386,8 +440,8 @@ public class WozManager extends PApplet implements OscEventListener
 				{
 					carLive=false;
 				}
-				
-				
+
+
 				if(carLive)
 				{
 					//print text for the car's name
@@ -400,8 +454,9 @@ public class WozManager extends PApplet implements OscEventListener
 				}
 			}
 		}
-		
+
 		text(myIp,10,(float) (height*.9));
+		text("Current Group Number: "+currentGroupNumber,10,(float) (height*.95));
 	}
 
 	/**
@@ -411,5 +466,11 @@ public class WozManager extends PApplet implements OscEventListener
 	public static void main(String[] args)
 	{
 		PApplet.main(new String[] {WozManager.class.getName() });
+	}
+
+	@Override
+	public void controlEvent(ControlEvent theEvent) 
+	{
+
 	}
 }
