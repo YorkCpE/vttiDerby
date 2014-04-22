@@ -1,20 +1,21 @@
-#include <SoftwareSerial.h>
+//pins for the Speed LED
+const int speedGreenPin=2; 
+const int speedGroundPin=3; //PWM pin
+const int speedRedPin=4;
+const int speedBluePin=5; //PWM pin
 
-SoftwareSerial mySerial(2, 3); // RX, TX
+//pins for the RGB LED for each warning
+const int greenPin=6; //PWM pin
+const int groundPin=7;
+const int redPin=8;
+const int bluePin=9;
 
-const int greenPin=4;
-const int groundPin=5;
-const int redPin=6;
-const int bluePin=7;
+//pin for the attached speaker
+const int speakerPin=12;
 
 void setup()
 {
-  mySerial.begin(9600);
   Serial.begin(9600);
-
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
 
   //setup LED pins
   pinMode(groundPin,OUTPUT);
@@ -22,12 +23,11 @@ void setup()
   pinMode(greenPin,OUTPUT);
   pinMode(redPin,OUTPUT);
 
-  digitalWrite(groundPin,LOW);
-  digitalWrite(bluePin,LOW);
-  digitalWrite(greenPin,LOW);
-  digitalWrite(redPin,LOW);
-
-  Serial.println("Hello, I'm a VTTI Derby Car");
+  //setup speed pins
+  digitalWrite(speedGreenPin,LOW);
+  digitalWrite(speedGroundPin,LOW);
+  digitalWrite(speedRedPin,LOW);
+  digitalWrite(speedGreenPin,LOW);
 }
 
 
@@ -37,17 +37,17 @@ const byte LAP_STARTSTOP=0xC;
 const byte HEARTBEAT=0xD;
 const byte SYSTEM_CHECK=0xE;
 
-const boolean LED_DEBUG=true;
-const boolean SERIAL_DEBUG=true;
+//true to falsh a yellow LED for the heartbeat
+const boolean SHOW_HEART_BEAT=true;
 
 int counter=0;
 byte readArray[4];
 
 void loop()
 {
-  while(mySerial.available()>0)
+  while(Serial.available()>0)
   {
-    readArray[counter%4]=mySerial.read(); 
+    readArray[counter%4]=Serial.read(); 
     counter++;
 
     //determine if this packet is valid
@@ -55,75 +55,43 @@ void loop()
 
     if(validPacket)
     {
-      //process this packet 
-
-        if(SERIAL_DEBUG)
-      {
-        Serial.print(readArray[0],HEX);
-        Serial.print(",");
-        Serial.print(readArray[1],HEX);
-        Serial.print(",");
-        Serial.print(readArray[2],HEX);
-        Serial.print(",");
-        Serial.println(readArray[3],HEX);
-      }
-
+      //process this packet
       byte commandByte=readArray[0];
-      byte args[2]={
-        readArray[1],readArray[2]            };
+      byte args[2]={readArray[1],readArray[2]};
 
       if(commandByte==LANE_VIOLATION)
       {
         executeLaneViolation();
-
-        if(SERIAL_DEBUG==true)
-        {
-          Serial.println("Lane Violation"); 
-        }
       }
       else if(commandByte==COLLISION_WARNING)
       {
         executeCollisionWarning(); 
-        if(SERIAL_DEBUG==true)
-        {
-          Serial.println("Collision Warning");
-        }
       }
       else if(commandByte==LAP_STARTSTOP)
       { 
         executeLapStartStop();
-        if(SERIAL_DEBUG==true)
-        {
-          Serial.println("Lap Start/Stop");
-        }
       }
       else if(commandByte==HEARTBEAT)
       {
-        if(SERIAL_DEBUG==true)
+
+        if(SHOW_HEART_BEAT==true)
         {
-          Serial.println("Heartbeat"); 
-        }
-        
-        if(LED_DEBUG==true)
-        {
-           digitalWrite(redPin,HIGH);
-           digitalWrite(greenPin,HIGH);
-           digitalWrite(bluePin,LOW);
-           
-           delay(50);
-           
-           digitalWrite(redPin,LOW);
-           digitalWrite(greenPin,LOW);
-          
+          digitalWrite(redPin,HIGH);
+          digitalWrite(greenPin,HIGH);
+          digitalWrite(bluePin,HIGH);
+
+          delay(50);
+
+          digitalWrite(redPin,LOW);
+          digitalWrite(greenPin,LOW);
+          digitalWrite(bluePin,LOW);
+
         }
       }
       else if(commandByte==SYSTEM_CHECK)
       {
         executeSystemCheck(); 
-        if(SERIAL_DEBUG==true)
-        {
-         Serial.println("System Check"); 
-        }
+
       }
 
       //this is needed because otherwise the command may execute multiple times
@@ -139,44 +107,40 @@ void loop()
 
 void executeLaneViolation()
 {
-  if(LED_DEBUG==true)
-  {
-    digitalWrite(redPin,HIGH);
-    digitalWrite(greenPin,LOW);
-    digitalWrite(bluePin,LOW);
 
-    delay(50);
+  digitalWrite(redPin,HIGH);
+  digitalWrite(greenPin,LOW);
+  digitalWrite(bluePin,LOW);
 
-    digitalWrite(redPin,LOW);
-  }
+  delay(50);
+
+  digitalWrite(redPin,LOW);
+
 }
 
 void executeCollisionWarning()
 {
-  if(LED_DEBUG==true)
-  {
-    digitalWrite(greenPin,HIGH);
-    digitalWrite(redPin,LOW);
-    digitalWrite(bluePin,LOW);
 
-    delay(50);
+  digitalWrite(greenPin,HIGH);
+  digitalWrite(redPin,LOW);
+  digitalWrite(bluePin,LOW);
 
-    digitalWrite(greenPin,LOW);
-  }
+  delay(50);
+
+  digitalWrite(greenPin,LOW);
+
 }
 
 void executeLapStartStop()
 {
-  if(LED_DEBUG==true)
-  {
-    digitalWrite(bluePin,HIGH);
-    digitalWrite(greenPin,LOW);
-    digitalWrite(greenPin,LOW);
+  digitalWrite(bluePin,HIGH);
+  digitalWrite(greenPin,LOW);
+  digitalWrite(greenPin,LOW);
 
-    delay(50);
+  delay(50);
 
-    digitalWrite(bluePin,LOW);
-  }
+  digitalWrite(bluePin,LOW);
+
 }
 
 void executeSystemCheck()
@@ -184,6 +148,8 @@ void executeSystemCheck()
 
 
 }
+
+
 
 
 
