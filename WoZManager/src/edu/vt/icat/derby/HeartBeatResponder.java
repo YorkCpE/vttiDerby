@@ -62,6 +62,11 @@ public class HeartBeatResponder extends Thread
 			//get the last checkin time
 			Object value = checkins.get(car);
 			
+			if(value==null)
+			{
+				continue;
+			}
+			
 			//make sure it's not a null value (because it's coming out of a hashmap)
 			long lastCheckin=(value==null)?-1:(long)value;
 			

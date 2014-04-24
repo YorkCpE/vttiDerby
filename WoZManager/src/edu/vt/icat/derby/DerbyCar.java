@@ -9,10 +9,10 @@ public class DerbyCar
 {
 	
 	//list of license shapes in the derby
-	static public enum LicenseShape {Triangle,Circle,Square};
+	static public enum LicenseShape {Triangle,Square,Circle};
 	
 	//list of license colors in the derby;
-	static public enum LicenseColor {Red, Blue, Green, Orange, Yellow, Purple, Black};
+	static public enum LicenseColor {Red, Blue, Green, Yellow, Purple, Black, Orange};
 	
 	//field to hold xbee address information
 	private XbeeID xbeeID;

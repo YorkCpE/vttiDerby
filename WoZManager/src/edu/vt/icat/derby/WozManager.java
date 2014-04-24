@@ -346,7 +346,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 	 */
 	public void setup()
 	{
-		size(800,600);
+		size(800,800);
 		background(0);
 
 		gridStartX = 10;
@@ -407,7 +407,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 	{
 		background(0);
 
-		textSize(16);
+		textSize(12);
 
 		//rows then columns
 		for(LicenseShape shape : LicenseShape.values())
