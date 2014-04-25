@@ -424,7 +424,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 				long timeStamp=-1;
 				if(checkin!=null)
 				{
-					timeStamp=(long) checkin;
+					timeStamp=(Long) checkin;
 				}
 
 				//determine time between when we last heard from the car

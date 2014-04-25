@@ -39,22 +39,37 @@ public class PitStop extends PApplet implements ControlListener
 	int red = color(255, 0, 0);
 	int blue = color(0, 0, 255);
 	int green = color(0, 255, 0);
-	int orange = orange = color(0, 0, 255);
-	int yellow = yellow = color(255, 128, 0);
-	int purple = purple = color(128, 0, 128);
-	int black = black = color(0, 0, 0);
+	int yellow = color(255, 255, 0);
+	int orange = color(255, 128, 0);
+	int purple = color(128, 0, 128);
+	int black = color(0, 0, 0);
 
 	// instantiating the circles
 	CircleButton red_circle = new CircleButton(150, 150, 50, red, red);
-	CircleButton blue_circle = new CircleButton(215, 150, 50, blue, red);
-	CircleButton green_circle = new CircleButton(300, 150, 50, green, red);
-	CircleButton orange_circle = new CircleButton(375, 150, 50, orange, red);
-	CircleButton yellow_circle = new CircleButton(450, 150, 50, yellow, red);
-	CircleButton purple_circle = new CircleButton(525, 150, 50, purple, red);
-	CircleButton black_circle = new CircleButton(600, 150, 50, black, red);
+	CircleButton blue_circle = new CircleButton(215, 150, 50, blue, blue);
+	CircleButton green_circle = new CircleButton(300, 150, 50, green, green);
+	CircleButton orange_circle = new CircleButton(375, 150, 50, orange, orange);
+	CircleButton yellow_circle = new CircleButton(450, 150, 50, yellow, yellow);
+	CircleButton purple_circle = new CircleButton(525, 150, 50, purple, purple);
+	CircleButton black_circle = new CircleButton(600, 150, 50, black, black);
 
 	//instantiating the squares
-	RectButton red_square = new RectButton(150, 150, 50, red, blue);
+	RectButton red_square = new RectButton(150, 150, 50, red, red);
+	RectButton blue_square = new RectButton(215, 150, 50, blue, blue);
+	RectButton green_square = new RectButton(300, 150, 50, green, green);
+	RectButton orange_square = new RectButton(375, 150, 50, orange, orange);
+	RectButton yellow_square = new RectButton(450, 150, 50, yellow, yellow);
+	RectButton purple_square = new RectButton(525, 150, 50, purple, purple);
+	RectButton black_square = new RectButton(600, 150, 50, black, black);
+
+	//instantiating the triangles
+	TriButton red_tri = new TriButton(150, 150, 175, 115, 200, 150, red, red);
+	TriButton blue_tri = new TriButton(225, 150, 250, 115, 275, 150, blue, blue);
+	TriButton green_tri = new TriButton(300, 150, 325, 115, 350, 150, green, green);
+	TriButton orange_tri = new TriButton(375, 150, 400, 115, 425, 150, orange, orange);
+	TriButton yellow_tri = new TriButton(450, 150, 475, 115, 500, 150, yellow, yellow);
+	TriButton purple_tri = new TriButton(525, 150, 550, 115, 575, 150, purple, purple);
+	TriButton black_tri = new TriButton(600, 150, 625, 115, 650, 150, black, black);
 
 
 
@@ -136,25 +151,38 @@ public class PitStop extends PApplet implements ControlListener
 
 		update(mouseX, mouseY);
 
-		if (control == 1)
-		{ // draw 7 rectangle buttons
-
-			red_square.display();
-		}
-		else if (control == 2)
-		{ // draw 7 triangle buttons
-			//triangle(300, 300, 50, 50);
-		}
-		else if (control == 3)
-		{ // draw 7 circle buttons
-			red_circle.display();
-			blue_circle.display();
-			green_circle.display();
-			orange_circle.display();
-			yellow_circle.display();
-			purple_circle.display();
-			black_circle.display();
-		}
+		if(control == 1)
+		  { // draw 7 rectangle buttons
+		  
+		      red_square.display();
+		      blue_square.display();
+		      green_square.display();
+		      orange_square.display();
+		      yellow_square.display();
+		      purple_square.display();
+		      black_square.display();
+		  }
+		  else if(control == 2)
+		  { // draw 7 triangle buttons
+		      red_tri.display();
+		      blue_tri.display();
+		      green_tri.display();
+		      orange_tri.display();
+		      yellow_tri.display();
+		      purple_tri.display();
+		      black_tri.display();
+		  }
+		  else if(control == 3)
+		  { // draw 7 circle buttons
+		  
+		    red_circle.display();
+		    blue_circle.display();
+		    green_circle.display();
+		    orange_circle.display();
+		    yellow_circle.display();
+		    purple_circle.display();
+		    black_circle.display();
+		  }
 	}
 
 	void update(int x, int y)
@@ -176,70 +204,109 @@ public class PitStop extends PApplet implements ControlListener
 		switch(control)
 		{
 		case 1:
-			if (mousePressed)
-			{
-				if (red_square.pressed())
-					background(0);
-				/*
-         else if(blue_square.pressed())
-       background(0);
-       else if(green_square.pressed())
-       background(0);
-       else if(orange_square.pressed())
-       background(0);
-       else if(yellow_square.pressed())
-       background(0);
-       else if(purple_square.pressed())
-       background(0);
-       else if(black_square.pressed())
-       background(0);
-				 */
-			}
-
-			if (locked == false)
-				red_square.update();
-			else 
-				locked = false;
-
-			break;
-
-		case 2:
-
-			break;
-
-		case 3:
-			if (mousePressed)
-			{
-				if (blue_circle.pressed())
-					background(0);
-				else if (blue_circle.pressed())
-					background(0);
-				else if (green_circle.pressed())
-					background(0);
-				else if (orange_circle.pressed())
-					background(0);
-				else if (yellow_circle.pressed())
-					background(0);
-				else if (purple_circle.pressed())
-					background(0);
-				else if (black_circle.pressed())
-					background(0);
-			}
-
-			if (locked == false)
-			{
-				red_circle.update();
-				blue_circle.update();
-				green_circle.update();
-				orange_circle.update();
-				yellow_circle.update();
-				purple_circle.update();
-				black_circle.update();
-			}
-			else
-				locked = false;
-
-			break;
+	        
+	        if(mousePressed)
+	        {
+	          if(red_square.pressed())
+	           background(0);
+	          else if(blue_square.pressed())
+	           background(0);
+	         else if(green_square.pressed())
+	           background(0);
+	         else if(orange_square.pressed())
+	           background(0);
+	         else if(yellow_square.pressed())
+	           background(0);
+	         else if(purple_square.pressed())
+	           background(0);
+	         else if(black_square.pressed())
+	           background(0);
+	        }
+	        
+	        if(locked == false)
+	        {
+	          red_square.update();
+	          blue_square.update();
+	          green_square.update();
+	          orange_square.update();
+	          yellow_square.update();
+	          purple_square.update();
+	          black_square.update();
+	        }
+	        else
+	          locked = false;
+	        
+	       break;
+	       
+	      case 2:
+	      
+	        if(mousePressed)
+	        {
+	          if(red_tri.pressed())
+	           background(0);
+	          else if(blue_tri.pressed())
+	           background(0);
+	         else if(green_tri.pressed())
+	           background(0);
+	         else if(orange_tri.pressed())
+	           background(0);
+	         else if(yellow_tri.pressed())
+	           background(0);
+	         else if(purple_tri.pressed())
+	           background(0);
+	         else if(black_tri.pressed())
+	           background(0);
+	        }
+	        
+	        if(locked == false)
+	        {
+	          red_tri.update();
+	          blue_tri.update();
+	          green_tri.update();
+	          orange_tri.update();
+	          yellow_tri.update();
+	          purple_tri.update();
+	          black_tri.update();
+	        }
+	        else
+	          locked = false;
+	      
+	        break;      
+	      
+	      case 3:
+	      
+	        if(mousePressed)
+	        {
+	          if(red_circle.pressed())
+	           background(0);
+	          else if(blue_circle.pressed())
+	           background(0);
+	         else if(green_circle.pressed())
+	           background(0);
+	         else if(orange_circle.pressed())
+	           background(0);
+	         else if(yellow_circle.pressed())
+	           background(0);
+	         else if(purple_circle.pressed())
+	           background(0);
+	         else if(black_circle.pressed())
+	           background(0);
+	        }
+	        
+	        if(locked == false)
+	        {
+	          red_circle.update();
+	          blue_circle.update();
+	          green_circle.update();
+	          orange_circle.update();
+	          yellow_circle.update();
+	          purple_circle.update();
+	          black_circle.update();
+	        }
+	        else
+	          locked = false;
+	      
+	        break;
 		}
 	}
 
@@ -278,7 +345,7 @@ public class PitStop extends PApplet implements ControlListener
 		ddl.setBackgroundColor(color(190));
 		ddl.setItemHeight(20);
 		ddl.setBarHeight(15);
-		ddl.captionLabel().set("shapes");
+		ddl.captionLabel().set("Shapes");
 		ddl.captionLabel().style().marginTop = 3;
 		ddl.captionLabel().style().marginLeft = 3;
 		ddl.valueLabel().style().marginTop = 3;
@@ -291,103 +358,140 @@ public class PitStop extends PApplet implements ControlListener
 
 	{
 
-		int x, y;
+	  int x, y, x1, x2, x3, y1, y2, y3;
 
-		int size;
+	  int size;
 
-		int basecolor, highlightcolor;
+	  int basecolor, highlightcolor;
 
-		int currentcolor;
+	  int currentcolor;
 
-		boolean over = false;
+	  boolean over = false;
 
-		boolean pressed = false;   
-
-
-
-		void update() 
-
-		{
-			if (over()) {
-
-				currentcolor = highlightcolor;
-			} 
-
-			else {
-
-				currentcolor = basecolor;
-			}
-		}
+	  boolean pressed = false;   
 
 
 
-		boolean pressed() 
+	  void update() 
 
-		{
+	  {
+	    if(over()) {
 
-			if (over) {
+	      currentcolor = highlightcolor;
 
-				locked = true;
+	    } 
 
-				return true;
-			} 
+	    else {
 
-			else {
+	      currentcolor = basecolor;
 
-				locked = false;
+	    }
 
-				return false;
-			}
-		}
+	  }
 
 
 
-		boolean over() 
+	  boolean pressed() 
 
-		{ 
+	  {
 
-			return true;
-		}
+	    if(over) {
 
+	      locked = true;
 
+	      return true;
 
-		boolean overRect(int x, int y, int width, int height) 
+	    } 
 
-		{
+	    else {
 
-			if (mouseX >= x && mouseX <= x+width && 
+	      locked = false;
 
-					mouseY >= y && mouseY <= y+height) {
+	      return false;
 
-				return true;
-			} 
+	    }    
 
-			else {
-
-				return false;
-			}
-		}
+	  }
 
 
 
-		boolean overCircle(int x, int y, int diameter) 
+	  boolean over() 
 
-		{
+	  { 
 
-			float disX = x - mouseX;
+	    return true; 
 
-			float disY = y - mouseY;
+	  }
 
-			if (sqrt(sq(disX) + sq(disY)) < diameter/2 ) {
 
-				return true;
-			} 
 
-			else {
+	  boolean overRect(int x, int y, int width, int height) 
 
-				return false;
-			}
-		}
+	  {
+
+	    if (mouseX >= x && mouseX <= x+width && 
+
+	      mouseY >= y && mouseY <= y+height) {
+
+	      return true;
+
+	    } 
+
+	    else {
+
+	      return false;
+
+	    }
+
+	  }
+	  
+	  boolean overTri(int x1, int x2, int x3, int y1, int y2, int y3) 
+	  {
+	    
+	    int base = x3 - x1;
+	    int _height = y1 - y2;
+
+	    if (mouseX >= x1 && mouseX <= x3 && mouseY >= y2 && mouseY <= y1 && abs(mouseX - x2 )<=abs((mouseY - y2)))
+	      {
+
+	      return true;
+
+	    } 
+
+	    else {
+
+	      return false;
+
+	    }
+
+	  }
+
+
+
+	  boolean overCircle(int x, int y, int diameter) 
+
+	  {
+
+	    float disX = x - mouseX;
+
+	    float disY = y - mouseY;
+
+	    if(sqrt(sq(disX) + sq(disY)) < diameter/2 ) {
+
+	      return true;
+
+	    } 
+
+	    else {
+
+	      return false;
+
+	    }
+
+	  }
+
+
+
 	}
 
 
@@ -396,57 +500,62 @@ public class PitStop extends PApplet implements ControlListener
 
 	{ 
 
-		CircleButton(int ix, int iy, int isize, int icolor, int ihighlight) 
+	  CircleButton(int ix, int iy, int isize, int icolor, int ihighlight) 
 
-		{
+	  {
 
-			x = ix;
+	    x = ix;
 
-			y = iy;
+	    y = iy;
 
-			size = isize;
+	    size = isize;
 
-			basecolor = icolor;
+	    basecolor = icolor;
 
-			highlightcolor = ihighlight;
+	    highlightcolor = ihighlight;
 
-			currentcolor = basecolor;
-		}
+	    currentcolor = basecolor;
 
-
-
-		@Override
-		boolean over() 
-
-		{
-
-			if ( overCircle(x, y, size) ) {
-
-				over = true;
-
-				return true;
-			} 
-
-			else {
-
-				over = false;
-
-				return false;
-			}
-		}
+	  }
 
 
 
-		void display() 
+	  boolean over() 
 
-		{
+	  {
 
-			stroke(255);
+	    if( overCircle(x, y, size) ) {
 
-			fill(currentcolor);
+	      over = true;
 
-			ellipse(x, y, size, size);
-		}
+	      return true;
+
+	    } 
+
+	    else {
+
+	      over = false;
+
+	      return false;
+
+	    }
+
+	  }
+
+
+
+	  void display() 
+
+	  {
+
+	    stroke(255);
+
+	    fill(currentcolor);
+
+	    ellipse(x, y, size, size);
+
+	  }
+
 	}
 
 
@@ -455,57 +564,132 @@ public class PitStop extends PApplet implements ControlListener
 
 	{
 
-		RectButton(int ix, int iy, int isize, int icolor, int ihighlight) 
+	  RectButton(int ix, int iy, int isize, int icolor, int ihighlight) 
 
-		{
+	  {
 
-			x = ix;
+	    x = ix;
 
-			y = iy;
+	    y = iy;
 
-			size = isize;
+	    size = isize;
 
-			basecolor = icolor;
+	    basecolor = icolor;
 
-			highlightcolor = ihighlight;
+	    highlightcolor = ihighlight;
 
-			currentcolor = basecolor;
-		}
+	    currentcolor = basecolor;
 
-
-
-		@Override
-		boolean over() 
-
-		{
-
-			if ( overRect(x, y, size, size) ) {
-
-				over = true;
-
-				return true;
-			} 
-
-			else {
-
-				over = false;
-
-				return false;
-			}
-		}
+	  }
 
 
 
-		void display() 
+	  boolean over() 
 
-		{
+	  {
 
-			stroke(255);
+	    if( overRect(x, y, size, size) ) 
+	    {
 
-			fill(currentcolor);
+	      over = true;
 
-			rect(x, y, size, size);
-		}
+	      return true;
+
+	    } 
+
+	    else 
+	    {
+
+	      over = false;
+
+	      return false;
+
+	    }
+
+	  }
+
+
+
+	  void display() 
+
+	  {
+
+	    stroke(255);
+
+	    fill(currentcolor);
+
+	    rect(x, y, size, size);
+
+	  }
+
+	}
+
+	class TriButton extends Button
+
+	{
+
+	  TriButton(int ix1, int iy1, int ix2, int iy2, int ix3, int iy3, int icolor, int ihighlight) 
+
+	  {
+
+	    x1 = ix1;
+
+	    y1 = iy1;
+	    
+	    x2 = ix2;
+
+	    y2 = iy2;
+	    
+	    x3 = ix3;
+
+	    y3 = iy3;
+
+	    basecolor = icolor;
+
+	    highlightcolor = ihighlight;
+
+	    currentcolor = basecolor;
+
+	  }
+
+
+
+	  boolean over() 
+
+	  {
+
+	    if( overTri(x1, x2, x3, y1, y2, y3) ) {
+
+	      over = true;
+
+	      return true;
+
+	    } 
+
+	    else {
+
+	      over = false;
+
+	      return false;
+
+	    }
+
+	  }
+
+
+
+	  void display() 
+
+	  {
+
+	    stroke(255);
+
+	    fill(currentcolor);
+
+	    triangle(x1, y1, x2, y2, x3, y3);
+
+	  }
+
 	}
 
 	public static void main(String[] args) 
