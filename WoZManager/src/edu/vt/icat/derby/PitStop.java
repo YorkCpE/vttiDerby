@@ -45,17 +45,17 @@ public class PitStop extends PApplet implements ControlListener
 	int black = color(0, 0, 0);
 
 	// instantiating the circles
-	CircleButton red_circle = new CircleButton(150, 150, 50, red, red);
-	CircleButton blue_circle = new CircleButton(215, 150, 50, blue, blue);
-	CircleButton green_circle = new CircleButton(300, 150, 50, green, green);
-	CircleButton orange_circle = new CircleButton(375, 150, 50, orange, orange);
-	CircleButton yellow_circle = new CircleButton(450, 150, 50, yellow, yellow);
-	CircleButton purple_circle = new CircleButton(525, 150, 50, purple, purple);
-	CircleButton black_circle = new CircleButton(600, 150, 50, black, black);
+	CircleButton red_circle = new CircleButton(175, 175, 50, red, red);
+	CircleButton blue_circle = new CircleButton(250, 175, 50, blue, blue);
+	CircleButton green_circle = new CircleButton(325, 175, 50, green, green);
+	CircleButton orange_circle = new CircleButton(400, 175, 50, orange, orange);
+	CircleButton yellow_circle = new CircleButton(475, 175, 50, yellow, yellow);
+	CircleButton purple_circle = new CircleButton(550, 175, 50, purple, purple);
+	CircleButton black_circle = new CircleButton(625, 175, 50, black, black);
 
 	//instantiating the squares
 	RectButton red_square = new RectButton(150, 150, 50, red, red);
-	RectButton blue_square = new RectButton(215, 150, 50, blue, blue);
+	RectButton blue_square = new RectButton(225, 150, 50, blue, blue);
 	RectButton green_square = new RectButton(300, 150, 50, green, green);
 	RectButton orange_square = new RectButton(375, 150, 50, orange, orange);
 	RectButton yellow_square = new RectButton(450, 150, 50, yellow, yellow);
@@ -63,13 +63,13 @@ public class PitStop extends PApplet implements ControlListener
 	RectButton black_square = new RectButton(600, 150, 50, black, black);
 
 	//instantiating the triangles
-	TriButton red_tri = new TriButton(150, 150, 175, 115, 200, 150, red, red);
-	TriButton blue_tri = new TriButton(225, 150, 250, 115, 275, 150, blue, blue);
-	TriButton green_tri = new TriButton(300, 150, 325, 115, 350, 150, green, green);
-	TriButton orange_tri = new TriButton(375, 150, 400, 115, 425, 150, orange, orange);
-	TriButton yellow_tri = new TriButton(450, 150, 475, 115, 500, 150, yellow, yellow);
-	TriButton purple_tri = new TriButton(525, 150, 550, 115, 575, 150, purple, purple);
-	TriButton black_tri = new TriButton(600, 150, 625, 115, 650, 150, black, black);
+	TriButton red_tri = new TriButton(150, 200, 175, 150, 200, 200, red, red);
+	TriButton blue_tri = new TriButton(225, 200, 250, 150, 275, 200, blue, blue);
+	TriButton green_tri = new TriButton(300, 200, 325, 150, 350, 200, green, green);
+	TriButton orange_tri = new TriButton(375, 200, 400, 150, 425, 200, orange, orange);
+	TriButton yellow_tri = new TriButton(450, 200, 475, 150, 500, 200, yellow, yellow);
+	TriButton purple_tri = new TriButton(525, 200, 550, 150, 575, 200, purple, purple);
+	TriButton black_tri = new TriButton(600, 200, 625, 150, 650, 200, black, black);
 
 
 
@@ -147,7 +147,7 @@ public class PitStop extends PApplet implements ControlListener
 	@Override
 	public void draw() {
 
-		background(255);
+		background(128);
 
 		update(mouseX, mouseY);
 
@@ -319,21 +319,18 @@ public class PitStop extends PApplet implements ControlListener
 			if (theEvent.getGroup().getValue() == 1.0)
 			{
 				print("d1-1.0\n");
-				background(100);
 
 				control = 1;
 			}
 			if (theEvent.getGroup().getValue() == 2.0)
 			{
 				print("d1-2.0\n");
-				background(200);
 
 				control = 2;
 			}
 			if (theEvent.getGroup().getValue() == 3.0)
 			{
 				print("d1-3.0\n");
-				background(300);
 
 				control = 3;
 			}
