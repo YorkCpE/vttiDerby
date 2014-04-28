@@ -1,0 +1,170 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+
+  <title>My Parse App</title>
+  <meta name="description" content="My Parse App">
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.2.18.min.js"></script>
+
+	
+  
+</head>
+
+<body>
+
+  
+  <div id="table">
+    
+  </div>
+  
+  <script type="text/javascript">
+	
+    Parse.initialize("x1fyYxbICQaevIesJPAHYnahjSkAySmfnXpgGWez", "vYmynVETVWV3iPor4LpXDzNM47i6qi0wHrCxLrVE");
+
+	onload=function(){
+	
+		setInterval(function(){refresh();}, 5000);
+	}
+	
+	function refresh(){
+	
+		var txt=document.getElementById("table");
+		
+		//Get latest group number
+		var Laps = Parse.Object.extend("Lap");
+		var query = new Parse.Query(Laps);
+		var groupNumber = -1;
+		//query.ascending('createdAt');
+		query.find({
+		  success: function(laps) {
+			// The object was retrieved successfully.
+			for(var i=0;i<laps.length;i++){
+				
+				var g = laps[i].get("group");
+				if(g > groupNumber)
+					groupNumber = g;
+			}
+			
+			//Got latest group number
+			if(groupNumber >= 0){
+			
+				//Get all laps for group number
+				var query = new Parse.Query(Laps);
+				query.equalTo("group",groupNumber);
+				query.find({
+				  success: function(laps) {
+					// The object was retrieved successfully.
+					var txt=document.getElementById("table");
+					
+					var hashTimes = {};
+					var hashInfractions = {};
+					
+					//Build hash of color-shapes with laps and total time
+					for(var i=0;i<laps.length;i++){
+					
+						var key = laps[i].get("color") + "-" + laps[i].get("shape");
+						var value = hashTimes[key];
+						if(value == null){
+						
+							hashTimes[key] = {"laps":1,"time":laps[i].get("time")};
+						}
+						else{
+						
+							value["laps"] = value["laps"] + 1;
+							value["time"] = value["time"] + laps[i].get("time");
+						}
+						
+					}
+					
+					var Infractions = Parse.Object.extend("Infraction");
+					var query = new Parse.Query(Infractions);
+					query.equalTo("group",groupNumber);
+					query.find({
+					  success: function(infractions) {
+					  
+						//Build hash of color-shaps with infractions
+						for(var i=0;i<infractions.length;i++){
+					
+							var key = infractions[i].get("color") + "-" + infractions[i].get("shape");
+							var value = hashInfractions[key];
+							if(value == null){
+							
+								hashInfractions[key] = {"infractions":1};
+							}
+							else{
+							
+								value["infractions"] = value["infractions"] + 1;
+							}
+							
+						}
+						
+						//Get keys
+						var colorShapeKeys = new Array();
+						
+						for (var key in hashTimes) {
+							colorShapeKeys.push(key);
+						}
+						
+						//Okay we have all laps and infractions for each colorShape, print out a table
+						var html = "<table><tr><th>Car</th><th>Laps</th><th>Infractions</th><th>Total Time</th></tr>";
+						for(var i=0;i<colorShapeKeys.length;i++){
+							
+							var colorShape = colorShapeKeys[i];
+							var lapTimes = hashTimes[colorShape];
+							var infractions = hashInfractions[colorShape];
+							
+							html += "<tr>";
+							html += "<td>" + colorShape + "</td>";
+							html += "<td>" + lapTimes["laps"] + "</td>";
+							
+							if(infractions)
+								html += "<td>" + infractions["infractions"] + "</td>";
+							else
+								html += "<td>0</td>";
+								
+							html += "<td>" + lapTimes["time"] + "</td>";
+							html += "</tr>";
+						
+						}
+						html += "</table>";
+						$("#table").html(html);
+						
+					  },
+					  error: function(object, error) {
+						// The object was not retrieved successfully.
+						// error is a Parse.Error with an error code and description.
+						
+					  }
+					});
+					
+					
+	
+				  },
+				  error: function(object, error) {
+					// The object was not retrieved successfully.
+					// error is a Parse.Error with an error code and description.
+					
+				  }
+				});
+			
+			}
+			
+		  },
+		  error: function(object, error) {
+			// The object was not retrieved successfully.
+			// error is a Parse.Error with an error code and description.
+			groupNumber = -1;
+		  }
+		});
+	
+	}
+	
+  </script>
+  
+</body>
+
+</html>
