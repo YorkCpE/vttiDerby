@@ -63,7 +63,7 @@ public class HeartBeatResponder extends Thread
 			Object value = checkins.get(car);
 			
 			//make sure it's not a null value (because it's coming out of a hashmap)
-			long lastCheckin=(value==null)?-1:(long)value;
+			long lastCheckin=(value==null)?-1:(Long)value;
 			
 			//get the destination for this message
 			String hostname=request.getDesintationIP();
