@@ -235,6 +235,13 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		{
 			return;
 		}
+		
+		ParseObject infractionObject = new ParseObject("Infraction");
+		infractionObject.put("color", splits[0]);
+		infractionObject.put("shape", splits[1]);
+		infractionObject.put("type", "Collision");
+		infractionObject.put("group", currentGroupNumber);
+		infractionObject.saveInBackground();
 
 		//pass command off to the ArduinoSender
 		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.COLLISION_WARNING, args));
@@ -254,6 +261,13 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 			return;
 		}
 
+		ParseObject infractionObject = new ParseObject("Infraction");
+		infractionObject.put("color", splits[0]);
+		infractionObject.put("shape", splits[1]);
+		infractionObject.put("type", "LaneViolation");
+		infractionObject.put("group", currentGroupNumber);
+		infractionObject.saveInBackground();
+		
 		//pass off command to the ArduinoSender
 		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.LANE_VIOLATION, args));
 	}
