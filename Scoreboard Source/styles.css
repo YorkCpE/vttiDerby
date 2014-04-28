@@ -1,0 +1,27 @@
+#container
+{
+    height:2000px;
+    width:2000px;
+    position:relative;
+}
+
+#image
+{    
+    position:absolute;
+    left:0;
+    top:0;
+}
+#text
+{
+    z-index:100;
+    position:absolute;  
+    color:black;
+	font-size:60px;
+    left:1000px;
+    top:545px;
+}
+#table
+{
+	position:absolute;
+	width:1600px;
+}
