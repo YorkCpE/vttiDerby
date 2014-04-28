@@ -45,39 +45,40 @@ public class PitStop extends PApplet implements ControlListener
 	int colorYellow = color(255, 255, 0);
 	int colorPurple = color(128, 0, 128);
 	int colorBlack = color(0, 0, 0);
+	int colorGrey = color(128,128,128);
 
 	// instantiating the circles
-	CircleButton red_circle = new CircleButton(150, 150, 50, colorRed, colorBlue);
-	CircleButton blue_circle = new CircleButton(215, 150, 50, colorBlue, colorRed);
-	CircleButton green_circle = new CircleButton(300, 150, 50, colorGreen, colorRed);
-	CircleButton orange_circle = new CircleButton(375, 150, 50, colorOrange, colorRed);
-	CircleButton yellow_circle = new CircleButton(450, 150, 50, colorYellow, colorRed);
-	CircleButton purple_circle = new CircleButton(525, 150, 50, colorPurple, colorRed);
-	CircleButton black_circle = new CircleButton(600, 150, 50, colorBlack, colorRed);
+	CircleButton red_circle = new CircleButton(150, 150, 50, colorRed, colorGrey);
+	CircleButton blue_circle = new CircleButton(215, 150, 50, colorBlue, colorGrey);
+	CircleButton green_circle = new CircleButton(300, 150, 50, colorGreen, colorGrey);
+	CircleButton orange_circle = new CircleButton(375, 150, 50, colorOrange, colorGrey);
+	CircleButton yellow_circle = new CircleButton(450, 150, 50, colorYellow, colorGrey);
+	CircleButton purple_circle = new CircleButton(525, 150, 50, colorPurple, colorGrey);
+	CircleButton black_circle = new CircleButton(600, 150, 50, colorBlack, colorGrey);
 
 	//put all the circle buttons in an array
 	Button[] circleButtons={red_circle,blue_circle, green_circle, orange_circle, yellow_circle, purple_circle, black_circle};
 
 	//instantiating the squares
-	RectButton red_square = new RectButton(150, 150, 50, colorRed, colorBlue);
-	RectButton blue_square = new RectButton(215, 150, 50, colorBlue, colorRed);
-	RectButton green_square = new RectButton(300, 150, 50, colorGreen, colorRed);
-	RectButton orange_square = new RectButton(375, 150, 50, colorOrange, colorRed);
-	RectButton yellow_square = new RectButton(450, 150, 50, colorYellow, colorRed);
-	RectButton purple_square = new RectButton(525, 150, 50, colorPurple, colorRed);
-	RectButton black_square = new RectButton(600, 150, 50, colorBlack, colorRed);
+	RectButton red_square = new RectButton(150, 150, 50, colorRed, colorGrey);
+	RectButton blue_square = new RectButton(215, 150, 50, colorBlue, colorGrey);
+	RectButton green_square = new RectButton(300, 150, 50, colorGreen, colorGrey);
+	RectButton orange_square = new RectButton(375, 150, 50, colorOrange, colorGrey);
+	RectButton yellow_square = new RectButton(450, 150, 50, colorYellow, colorGrey);
+	RectButton purple_square = new RectButton(525, 150, 50, colorPurple, colorGrey);
+	RectButton black_square = new RectButton(600, 150, 50, colorBlack, colorGrey);
 
 	//put all the rectangle buttons into an array
 	Button[] rectangleButtons={red_square, blue_square, green_square, orange_square, yellow_square, purple_square, black_square};
 	
 	//instantiate the triangle buttons
-	TriangleButton red_triangle = new TriangleButton(150, 150, 60, colorRed, colorBlue);
-	TriangleButton blue_triangle = new TriangleButton(215, 150, 60, colorBlue, colorRed);
-	TriangleButton green_triangle = new TriangleButton(300, 150, 60, colorGreen, colorRed);
-	TriangleButton orange_triangle = new TriangleButton(375, 150, 60, colorOrange, colorRed);
-	TriangleButton yellow_triangle = new TriangleButton(450, 150, 60, colorYellow, colorRed);
-	TriangleButton purple_triangle = new TriangleButton(525, 150, 60, colorPurple, colorRed);
-	TriangleButton black_triangle = new TriangleButton(600, 150, 60, colorBlack, colorRed);
+	TriangleButton red_triangle = new TriangleButton(150, 150, 60, colorRed, colorGrey);
+	TriangleButton blue_triangle = new TriangleButton(215, 150, 60, colorBlue, colorGrey);
+	TriangleButton green_triangle = new TriangleButton(300, 150, 60, colorGreen, colorGrey);
+	TriangleButton orange_triangle = new TriangleButton(375, 150, 60, colorOrange, colorGrey);
+	TriangleButton yellow_triangle = new TriangleButton(450, 150, 60, colorYellow, colorGrey);
+	TriangleButton purple_triangle = new TriangleButton(525, 150, 60, colorPurple, colorGrey);
+	TriangleButton black_triangle = new TriangleButton(600, 150, 60, colorBlack, colorGrey);
 
 	//put all the triangle buttons into an array
 	Button[] triangleButtons={red_triangle, blue_triangle, green_triangle, orange_triangle, yellow_triangle, purple_triangle, black_triangle};
@@ -118,7 +119,7 @@ public class PitStop extends PApplet implements ControlListener
 		d1.addItem("Circles", 3);
 		
 		cp5.addTextfield("Host IP")
-	     .setPosition((float).9*height,(float).9*width)
+	     .setPosition((float).75*width,(float).75*height)
 	     .setSize(100,40)
 	     .setFocus(true)
 	     .setFont(createFont("arial",20))
