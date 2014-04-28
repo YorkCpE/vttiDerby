@@ -1,16 +1,21 @@
 package edu.vt.icat.derby;
 
-import controlP5.CheckBox;
+import netP5.NetAddress;
+import oscP5.OscP5;
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
 import controlP5.ControlP5;
 import controlP5.DropdownList;
+import edu.vt.icat.derby.DerbyCar.LicenseColor;
+import edu.vt.icat.derby.DerbyCar.LicenseShape;
 import processing.core.PApplet;
+
+// another comment
 
 /**
  * PitStop GUI
  * @author Nate Hughes njh2986@vt.edu
- *
+ * @author Jason Forsyth jforsyth@vt.edu
  */
 
 public class PitStop extends PApplet implements ControlListener
@@ -18,50 +23,82 @@ public class PitStop extends PApplet implements ControlListener
 
 	private static final long serialVersionUID = 7253625949765492271L;
 
-	int control;
+	//int control;
 
-	boolean locked = false;
-
+	//boolean locked = false;
 
 	ControlP5 cp5;
 
-	CheckBox checkbox;
+	//CheckBox checkbox;
 
 	DropdownList d1;
 
-	int myColorBackground;
-	int cnt = 0;
+	//int myColorBackground;
+	//int cnt = 0;
 
-	int background = color(204, 102, 0);
+	//int background = color(204, 102, 0);
 
-	int red = color(255, 0, 0);
-	int blue = color(0, 0, 255);
-	int green = color(0, 255, 0);
-	int orange = orange = color(0, 0, 255);
-	int yellow = yellow = color(255, 128, 0);
-	int purple = purple = color(128, 0, 128);
-	int black = black = color(0, 0, 0);
+	int colorRed = color(255, 0, 0);
+	int colorBlue = color(0, 0, 255);
+	int colorGreen = color(0, 255, 0);
+	int colorOrange = color(255, 165, 0);
+	int colorYellow = color(255, 255, 0);
+	int colorPurple = color(128, 0, 128);
+	int colorBlack = color(0, 0, 0);
 
 	// instantiating the circles
-	CircleButton red_circle = new CircleButton(150, 150, 50, red, red);
-	CircleButton blue_circle = new CircleButton(215, 150, 50, blue, red);
-	CircleButton green_circle = new CircleButton(300, 150, 50, green, red);
-	CircleButton orange_circle = new CircleButton(375, 150, 50, orange, red);
-	CircleButton yellow_circle = new CircleButton(450, 150, 50, yellow, red);
-	CircleButton purple_circle = new CircleButton(525, 150, 50, purple, red);
-	CircleButton black_circle = new CircleButton(600, 150, 50, black, red);
+	CircleButton red_circle = new CircleButton(150, 150, 50, colorRed, colorBlue);
+	CircleButton blue_circle = new CircleButton(215, 150, 50, colorBlue, colorRed);
+	CircleButton green_circle = new CircleButton(300, 150, 50, colorGreen, colorRed);
+	CircleButton orange_circle = new CircleButton(375, 150, 50, colorOrange, colorRed);
+	CircleButton yellow_circle = new CircleButton(450, 150, 50, colorYellow, colorRed);
+	CircleButton purple_circle = new CircleButton(525, 150, 50, colorPurple, colorRed);
+	CircleButton black_circle = new CircleButton(600, 150, 50, colorBlack, colorRed);
+
+	//put all the circle buttons in an array
+	Button[] circleButtons={red_circle,blue_circle, green_circle, orange_circle, yellow_circle, purple_circle, black_circle};
 
 	//instantiating the squares
-	RectButton red_square = new RectButton(150, 150, 50, red, blue);
+	RectButton red_square = new RectButton(150, 150, 50, colorRed, colorBlue);
+	RectButton blue_square = new RectButton(215, 150, 50, colorBlue, colorRed);
+	RectButton green_square = new RectButton(300, 150, 50, colorGreen, colorRed);
+	RectButton orange_square = new RectButton(375, 150, 50, colorOrange, colorRed);
+	RectButton yellow_square = new RectButton(450, 150, 50, colorYellow, colorRed);
+	RectButton purple_square = new RectButton(525, 150, 50, colorPurple, colorRed);
+	RectButton black_square = new RectButton(600, 150, 50, colorBlack, colorRed);
 
+	//put all the rectangle buttons into an array
+	Button[] rectangleButtons={red_square, blue_square, green_square, orange_square, yellow_square, purple_square, black_square};
+	
+	//instantiate the triangle buttons
+	TriangleButton red_triangle = new TriangleButton(150, 150, 60, colorRed, colorBlue);
+	TriangleButton blue_triangle = new TriangleButton(215, 150, 60, colorBlue, colorRed);
+	TriangleButton green_triangle = new TriangleButton(300, 150, 60, colorGreen, colorRed);
+	TriangleButton orange_triangle = new TriangleButton(375, 150, 60, colorOrange, colorRed);
+	TriangleButton yellow_triangle = new TriangleButton(450, 150, 60, colorYellow, colorRed);
+	TriangleButton purple_triangle = new TriangleButton(525, 150, 60, colorPurple, colorRed);
+	TriangleButton black_triangle = new TriangleButton(600, 150, 60, colorBlack, colorRed);
 
+	//put all the triangle buttons into an array
+	Button[] triangleButtons={red_triangle, blue_triangle, green_triangle, orange_triangle, yellow_triangle, purple_triangle, black_triangle};
+	
+	Button[] currentButtons = {};
 
+	private boolean locked=false;
+	
+	
+	private NetAddress managerAddress;
+	
+	public PitStop()
+	{
+		managerAddress = new NetAddress(WozManager.DefaultHostName, WozManager.MANAGER_DEFAULT_LISTENING_PORT);
+	}
+	
 	@Override
 	public void setup() 
 	{
 
 		size(800, 500);
-		//colorMode(HSB, width, 100, width);
 		noStroke(); 
 		background(000);
 		smooth();
@@ -72,444 +109,284 @@ public class PitStop extends PApplet implements ControlListener
 				.setPosition(10, 25)
 				;
 
-		customize(d1); // customize the first list
-	}
-
-	@Override
-	public void keyPressed() {
-		if (key==' ') {
-			checkbox.deactivateAll();
-		} 
-		else {
-			for (int i=0;i<6;i++) {
-				// check if key 0-5 have been pressed and toggle
-				// the checkbox item accordingly.
-				if (keyCode==(48 + i)) { 
-					// the index of checkbox items start at 0
-					checkbox.toggle(i);
-					println("toggle "+checkbox.getItem(i).name());
-					// also see 
-					// checkbox.activate(index);
-					// checkbox.deactivate(index);
-				}
+		// a convenience function to customize a DropdownList
+		d1.setBackgroundColor(color(190));
+		d1.setItemHeight(20);
+		d1.setBarHeight(15);
+		d1.addItem("Squares", 1);
+		d1.addItem("Triangles", 2);
+		d1.addItem("Circles", 3);
+		
+		cp5.addTextfield("Host IP")
+	     .setPosition((float).9*height,(float).9*width)
+	     .setSize(100,40)
+	     .setFocus(true)
+	     .setFont(createFont("arial",20))
+	     .setColor(color(255,0,0))
+	     .addListener(new ControlListener() {
+			
+			@Override
+			public void controlEvent(ControlEvent arg0) 
+			{
+				String newHostIP=arg0.getStringValue();
+				System.out.println("Host IP Set to "+newHostIP);
+				
+				managerAddress = new NetAddress(newHostIP, WozManager.MANAGER_DEFAULT_LISTENING_PORT);
 			}
-		}
-
-		if (key=='1') {
-			// set the height of a pulldown menu, should always be a multiple of itemHeight
-			d1.setHeight(210);
-		} 
-		else if (key=='2') {
-			// set the height of a pulldown menu, should always be a multiple of itemHeight
-			d1.setHeight(120);
-		}
-		else if (key=='3') {
-			// set the height of a pulldown menu item, should always be a fraction of the pulldown menu
-			d1.setItemHeight(30);
-		} 
-		else if (key=='4') {
-			// set the height of a pulldown menu item, should always be a fraction of the pulldown menu
-			d1.setItemHeight(12);
-			d1.setBackgroundColor(color(255));
-		} 
-		else if (key=='5') {
-			// add new items to the pulldown menu
-			int n = (int)(random(100000));
-			d1.addItem("item "+n, n);
-		} 
-		else if (key=='6') {
-			// remove items from the pulldown menu  by name
-			d1.removeItem("item "+cnt);
-			cnt++;
-		}
-		else if (key=='7') {
-			d1.clear();
-		}
+		})
+	     ;
 	}
 
 	@Override
-	public void draw() {
-
+	public void draw() 
+	{
 		background(255);
 
-		update(mouseX, mouseY);
-
-		if (control == 1)
-		{ // draw 7 rectangle buttons
-
-			red_square.display();
-		}
-		else if (control == 2)
-		{ // draw 7 triangle buttons
-			//triangle(300, 300, 50, 50);
-		}
-		else if (control == 3)
-		{ // draw 7 circle buttons
-			red_circle.display();
-			blue_circle.display();
-			green_circle.display();
-			orange_circle.display();
-			yellow_circle.display();
-			purple_circle.display();
-			black_circle.display();
+		for(Button b : currentButtons)
+		{
+			if(mousePressed==true)
+			{
+				if(b.over() & !locked)
+				{
+					locked=true;
+					background(0);
+					
+					//println("Button!");
+					b.execute();
+				}
+			}
+			
+			b.update();
+			
+			b.display();
 		}
 	}
-
-	void update(int x, int y)
-
+	
+	public void mouseReleased()
 	{
-		/*
-  if(locked == false) {
-
-   blue_circle.update();
-
-   } 
-
-   else {
-
-   locked = false;
-
-   }
-		 */
-		switch(control)
-		{
-		case 1:
-			if (mousePressed)
-			{
-				if (red_square.pressed())
-					background(0);
-				/*
-         else if(blue_square.pressed())
-       background(0);
-       else if(green_square.pressed())
-       background(0);
-       else if(orange_square.pressed())
-       background(0);
-       else if(yellow_square.pressed())
-       background(0);
-       else if(purple_square.pressed())
-       background(0);
-       else if(black_square.pressed())
-       background(0);
-				 */
-			}
-
-			if (locked == false)
-				red_square.update();
-			else 
-				locked = false;
-
-			break;
-
-		case 2:
-
-			break;
-
-		case 3:
-			if (mousePressed)
-			{
-				if (blue_circle.pressed())
-					background(0);
-				else if (blue_circle.pressed())
-					background(0);
-				else if (green_circle.pressed())
-					background(0);
-				else if (orange_circle.pressed())
-					background(0);
-				else if (yellow_circle.pressed())
-					background(0);
-				else if (purple_circle.pressed())
-					background(0);
-				else if (black_circle.pressed())
-					background(0);
-			}
-
-			if (locked == false)
-			{
-				red_circle.update();
-				blue_circle.update();
-				green_circle.update();
-				orange_circle.update();
-				yellow_circle.update();
-				purple_circle.update();
-				black_circle.update();
-			}
-			else
-				locked = false;
-
-			break;
-		}
+		locked=false;
 	}
 
 	@Override
-	public void controlEvent(ControlEvent theEvent) {
+	public void controlEvent(ControlEvent theEvent) 
+	{
 		if (theEvent.isFrom(d1)) 
 		{
-
-			//println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
 			if (theEvent.getGroup().getValue() == 1.0)
 			{
-				print("d1-1.0\n");
-				background(100);
-
-				control = 1;
+				currentButtons=rectangleButtons;
 			}
 			if (theEvent.getGroup().getValue() == 2.0)
 			{
-				print("d1-2.0\n");
-				background(200);
-
-				control = 2;
+				currentButtons=triangleButtons;
 			}
 			if (theEvent.getGroup().getValue() == 3.0)
 			{
-				print("d1-3.0\n");
-				background(300);
-
-				control = 3;
+				currentButtons=circleButtons;
 			}
 		}
 	}
 
-	void customize(DropdownList ddl) {
-		// a convenience function to customize a DropdownList
-		ddl.setBackgroundColor(color(190));
-		ddl.setItemHeight(20);
-		ddl.setBarHeight(15);
-		ddl.captionLabel().set("shapes");
-		ddl.captionLabel().style().marginTop = 3;
-		ddl.captionLabel().style().marginLeft = 3;
-		ddl.valueLabel().style().marginTop = 3;
-		ddl.addItem("Squares", 1);
-		ddl.addItem("Triangles", 2);
-		ddl.addItem("Circles", 3);
-	}
-
-	class Button
-
+	abstract class Button
 	{
+		protected int buttonX;
 
-		int x, y;
+		protected int buttonY;
 
-		int size;
+		protected int buttonSize;
 
-		int basecolor, highlightcolor;
+		protected int basecolor, highlightcolor;
 
-		int currentcolor;
+		protected int currentcolor;
+		
+		protected LicenseShape licenseShape;
+		protected LicenseColor licenesColor;
 
-		boolean over = false;
+		//protected boolean over = false;
 
-		boolean pressed = false;   
+		//protected boolean pressed = false;   
 
-
-
-		void update() 
-
+		public Button(int ix, int iy, int isize, int icolor, int ihighlight)
 		{
-			if (over()) {
+			buttonX=ix;
+			buttonY=iy;
+			buttonSize=isize;
+			basecolor=icolor;
+			highlightcolor=ihighlight;
+			
+			if(basecolor==colorRed)
+			{
+				licenesColor=LicenseColor.Red;
+			}
+			else if(basecolor == colorBlack)
+			{
+				licenesColor=LicenseColor.Black;
+			}
+			else if(basecolor == colorBlue)
+			{
+				licenesColor=LicenseColor.Blue;
+			}
+			else if(basecolor == colorGreen)
+			{
+				licenesColor=LicenseColor.Green;
+			}
+			else if(basecolor == colorOrange)
+			{
+				licenesColor=LicenseColor.Orange;
+			}
+			else if(basecolor == colorPurple)
+			{
+				licenesColor=LicenseColor.Purple;
+			}
+			else if(basecolor == colorYellow)
+			{
+				licenesColor=LicenseColor.Yellow;
+			}
+		}
 
+		public void update() 
+		{
+			if (over()) 
+			{
 				currentcolor = highlightcolor;
 			} 
-
-			else {
-
+			else 
+			{
 				currentcolor = basecolor;
 			}
 		}
-
-
-
-		boolean pressed() 
-
+		
+		public void execute()
 		{
-
-			if (over) {
-
-				locked = true;
-
-				return true;
-			} 
-
-			else {
-
-				locked = false;
-
-				return false;
-			}
+			WoZCommand systemCheckCommand = new WoZCommand(licenesColor, licenseShape, WoZCommand.SYSTEM_CHECK, "");
+			OscP5.flush(systemCheckCommand.generateOscMessage(), managerAddress);
 		}
-
-
-
-		boolean over() 
-
-		{ 
-
-			return true;
-		}
-
-
-
-		boolean overRect(int x, int y, int width, int height) 
-
-		{
-
-			if (mouseX >= x && mouseX <= x+width && 
-
-					mouseY >= y && mouseY <= y+height) {
-
-				return true;
-			} 
-
-			else {
-
-				return false;
-			}
-		}
-
-
-
-		boolean overCircle(int x, int y, int diameter) 
-
-		{
-
-			float disX = x - mouseX;
-
-			float disY = y - mouseY;
-
-			if (sqrt(sq(disX) + sq(disY)) < diameter/2 ) {
-
-				return true;
-			} 
-
-			else {
-
-				return false;
-			}
-		}
+		public abstract boolean over(); 
+		public abstract void display();
 	}
 
 
 
-	class CircleButton extends Button
-
+	class CircleButton extends Button 
 	{ 
-
-		CircleButton(int ix, int iy, int isize, int icolor, int ihighlight) 
-
+		public CircleButton(int ix, int iy, int isize, int icolor, int ihighlight) 
 		{
-
-			x = ix;
-
-			y = iy;
-
-			size = isize;
-
-			basecolor = icolor;
-
-			highlightcolor = ihighlight;
-
-			currentcolor = basecolor;
+			super(ix, iy, isize, icolor, ihighlight);
+			licenseShape=LicenseShape.Circle;
 		}
-
-
 
 		@Override
-		boolean over() 
-
+		public boolean over() 
 		{
+			float disX = buttonX - mouseX;
 
-			if ( overCircle(x, y, size) ) {
+			float disY = buttonY - mouseY;
 
-				over = true;
-
+			if (sqrt(sq(disX) + sq(disY)) < buttonSize/2 ) 
+			{
 				return true;
 			} 
 
-			else {
-
-				over = false;
-
+			else
+			{
 				return false;
 			}
 		}
 
-
-
-		void display() 
-
+		@Override
+		public void display() 
 		{
-
 			stroke(255);
-
 			fill(currentcolor);
-
-			ellipse(x, y, size, size);
+			ellipse(buttonX, buttonY, buttonSize, buttonSize);
 		}
 	}
 
+	class TriangleButton extends Button
+	{
+		private int x1,y1,x2,y2,x3,y3;
+		private int l=1;
+		
+		public TriangleButton(int ix, int iy, int isize, int icolor, int ihighlight) 
+		{
+			super(ix, iy, isize, icolor, ihighlight);
+			
+			licenseShape=LicenseShape.Triangle;
+			
+			l=isize;
+			
+			x1=ix;
+			y1=iy;
+			
+			x2=x1+l/2;
+			y2=y1+l/2;
+			
+			x3=x1+l;
+			y3=y1;
+			
+			
+		}
 
+		@Override
+		public boolean over() 
+		{
+			if(mouseX>x1 && mouseX<x3 && mouseY<y2)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		@Override
+		public void display() 
+		{
+			fill(currentcolor);
+			triangle(x1, y1, x2, y2, x3, y3);
+			return;
+		}
+
+	}
 
 	class RectButton extends Button
-
 	{
 
-		RectButton(int ix, int iy, int isize, int icolor, int ihighlight) 
-
+		public RectButton(int ix, int iy, int isize, int icolor, int ihighlight) 
 		{
-
-			x = ix;
-
-			y = iy;
-
-			size = isize;
-
-			basecolor = icolor;
-
-			highlightcolor = ihighlight;
-
-			currentcolor = basecolor;
+			super(ix, iy, isize, icolor, ihighlight);
+			
+			licenseShape=LicenseShape.Square;
 		}
 
 
 
 		@Override
-		boolean over() 
-
+		public boolean over() 
 		{
-
-			if ( overRect(x, y, size, size) ) {
-
-				over = true;
-
+			if(mouseX>buttonX && mouseX<buttonX+buttonSize && mouseY>buttonY && mouseY<buttonY+buttonSize)
+			{
 				return true;
-			} 
-
-			else {
-
-				over = false;
-
+			}
+			else
+			{
 				return false;
 			}
+			
 		}
 
-
-
-		void display() 
-
+		@Override
+		public void display() 
 		{
-
 			stroke(255);
-
 			fill(currentcolor);
-
-			rect(x, y, size, size);
+			rect(buttonX, buttonY, buttonSize, buttonSize);
 		}
 	}
 
 	public static void main(String[] args) 
 	{
 		PApplet.main(new String[] {PitStop.class.getName() });
-
 	}
-
 }
