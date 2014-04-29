@@ -36,7 +36,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 	/**
 	 * hostname for the OSC server. Should be set to a real host name if deployed.
 	 */
-	public static final String DefaultHostName = "localhost";
+	public static final String DefaultHostName = "netlenovo";
 
 	private OscP5 server=null;
 
@@ -204,21 +204,23 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 	{
 		NetAddress newClient = new NetAddress(clientIP, clientPort);
 
-		if(!newClient.isvalid())
+		/*if(!newClient.isvalid())
 		{
 			return;
 		}
 		else
 		{
 			System.out.println("Received Client Registration from "+newClient.toString());
-		}
+		}*/
+		
+		System.out.println("Received Client Registration from "+newClient.toString());
 
-		activeClients.add(newClient);
+		//activeClients.add(newClient);
 
 		WozControlMessage registrationAck = 
 				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, "");
 
-		OscP5.flush(registrationAck.generateOscMessage(), newClient);
+		server.send(registrationAck.generateOscMessage(), newClient);
 	}
 
 	/**
@@ -386,7 +388,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 	 */
 	public void setup()
 	{
-		size(800,800);
+		size(800,600);
 		background(0);
 
 		gridStartX = 10;

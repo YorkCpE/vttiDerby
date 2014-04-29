@@ -312,8 +312,16 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 	}
 	
+	private long lastAttempTime=System.currentTimeMillis();
 	private void attemptManagerRegistration()
 	{
+		if(Math.abs(lastAttempTime-System.currentTimeMillis())<5000)
+		{
+			return;
+		}
+		
+		lastAttempTime=System.currentTimeMillis();
+		
 		connectedToWoZManager=false;
 		
 		WozControlMessage registration = new WozControlMessage(WozControlMessage.REGISTRATION, myCurrentIP, myCurrentPort, "");
@@ -376,7 +384,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			
 			
 			laptime = Math.abs(startStopDate.getTime() - now.getTime()) / 1000;
-			
+			startStopDate=now;
 			
 		}
 		else
@@ -387,7 +395,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		//send OSC message
 		WoZCommand lapStartStop = new WoZCommand(currentColor,currentShape,WoZCommand.LAP_STARTSTOP,String.valueOf(laptime));
 		localHost.send(lapStartStop.generateOscMessage(), wozManagerAddress);
-
+		
 		if(enableLocalXbee)
 		{
 			//send xbee message
@@ -556,7 +564,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private void setShape(LicenseShape shape) 
 	{
 		currentShape=shape;
-
+		startStopDate=null;
 	}
 
 	/**
@@ -566,7 +574,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	private void setColor(LicenseColor color) 
 	{
 		currentColor=color;
-
+		startStopDate=null;
 	}
 
 	/**
