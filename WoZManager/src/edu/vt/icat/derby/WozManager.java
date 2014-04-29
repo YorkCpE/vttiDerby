@@ -129,6 +129,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		server.plug(this, "collisionWarning", WoZCommand.COLLISION_WARNING);
 		server.plug(this, "laneViolation", WoZCommand.LANE_VIOLATION);
 		server.plug(this, "lapStartStop", WoZCommand.LAP_STARTSTOP);
+		server.plug(this, "systemCheck", WoZCommand.SYSTEM_CHECK);
 
 		myIp=server.ip();
 
@@ -173,7 +174,32 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 
 		System.out.println("OSC Server Running on "+ server.ip());
 	}
+	
+	/**
+	 * Function called when receiving a system_check command from a client
+	 * @param arduinoTarget Arduino to send Command to
+	 * @param args Should be empty string for this command
+	 */
+	public void systemCheck(String arduinoTarget, String args)
+	{
+		String[] splits=arduinoTarget.split(",");
 
+		if(splits.length>2)
+		{
+			return;
+		}
+		
+		//pass command off to the ArduinoSender
+		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.SYSTEM_CHECK, args));
+		
+	}
+
+	/**
+	 * Function called when receiving registration from WoZClient
+	 * @param clientIP Client IP
+	 * @param clientPort Port to respond to
+	 * @param args Should be empty string
+	 */
 	public void receiveClientRegistration(String clientIP, int clientPort, String args)
 	{
 		NetAddress newClient = new NetAddress(clientIP, clientPort);
