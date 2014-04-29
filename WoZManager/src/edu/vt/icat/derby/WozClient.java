@@ -459,7 +459,30 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 		//print whether the WoZClient is connected to the current Arduino
 		text((connectedToArduino)?"Connected To Arduino":"No Arduino Connection",10,500);
+		
+		if(keyPressed && !locked)
+		{
+			locked=true;
+			if(key=='j')
+			{
+				sendLaneViolation();
+			}
+			else if(key=='k')
+			{
+				sendLapStartStop();
+			}
+			else if(key=='l')
+			{
+				sendCollisionWarning();
+			}
+		}
 
+	}
+	
+	private boolean locked=false;
+	public void keyReleased()
+	{
+		locked=false;
 	}
 
 	/**
