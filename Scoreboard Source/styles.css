@@ -25,3 +25,14 @@
 	position:absolute;
 	width:1600px;
 }
+
+#grouptext
+{
+
+	position:absolute;
+	left:3500px;
+    top:200px;
+    font-size:100px;
+    width:300px;
+    text-align:center;
+}

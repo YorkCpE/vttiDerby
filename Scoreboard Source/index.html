@@ -21,6 +21,8 @@
     <div id="text">
 		Loading Data...
     </div>
+    <div id="grouptext">
+    </div>
 </div>
   
   <script type="text/javascript">
@@ -67,6 +69,8 @@
 			//Got latest group number
 			if(groupNumber >= 0){
 			
+				$("#grouptext").html("Heat # " + groupNumber);
+				
 				//Get all laps for group number
 				var query = new Parse.Query(Laps);
 				query.equalTo("group",groupNumber);
