@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="styles.css">
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.2.18.min.js"></script>
-
+  <script type="text/javascript" src="underscore-min.js"></script>
 	
   
 </head>
@@ -30,6 +30,21 @@
 	onload=function(){
 	
 		setInterval(function(){refresh();}, 5000);
+	}
+	
+	function compare(a,b) {
+		if (a["laps"] < b["laps"])
+			return -1;
+		if (a["laps"] > b["laps"])
+			return 1;
+		if(a["laps"] == b["laps"]){
+			if (a["time"] < b["time"])
+				return -1;
+			if (a["time"] > b["time"])
+				return 1;
+			return 0;
+		}
+		return 0;
 	}
 	
 	function refresh(){
@@ -62,14 +77,14 @@
 					var hashTimes = {};
 					var hashInfractions = {};
 					
-					//Build hash of color-shapes with laps and total time
+					//Build hash of color-shapes, laps and total time
 					for(var i=0;i<laps.length;i++){
 					
 						var key = laps[i].get("color") + "-" + laps[i].get("shape");
 						var value = hashTimes[key];
 						if(value == null){
 						
-							hashTimes[key] = {"laps":1,"time":laps[i].get("time")};
+							hashTimes[key] = {"laps":1,"time":laps[i].get("time"),"key":key};
 						}
 						else{
 						
@@ -101,23 +116,20 @@
 							
 						}
 						
-						//Get keys
-						var colorShapeKeys = new Array();
-						
-						for (var key in hashTimes) {
-							colorShapeKeys.push(key);
-						}
-						
+						//Sort by laps then time
+						hashTimes = _.sortBy(hashTimes,'laps');
+
+				
 						//Okay we have all laps and infractions for each colorShape, print out a table
 						var html = "<table id=\"table\">";
-						for(var i=0;i<colorShapeKeys.length;i++){
+						for(var i=hashTimes.length-1;i>=0;i--){
 							
-							var colorShape = colorShapeKeys[i];
-							var lapTimes = hashTimes[colorShape];
-							var infractions = hashInfractions[colorShape];
+							var lapTimes = hashTimes[i];
+							var key = lapTimes["key"];
+							var infractions = hashInfractions[key];
 							
 							html += "<tr height=\"140\">";
-							html += "<td width=\"500\">" + colorShape + "</td>";
+							html += "<td width=\"500\">" + key + "</td>";
 							if(infractions)
 								html += "<td width=\"175\">" + infractions["infractions"] + "</td>";
 							else
