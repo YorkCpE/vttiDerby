@@ -118,27 +118,56 @@
 						
 						//Sort by laps then time
 						hashTimes = _.sortBy(hashTimes,'laps');
-
+						var html = "<table id=\"table\">";
+						
+						var lapGroups = _.groupBy(hashTimes,function(hash){ return hash["laps"];});
+						var lapGroupKeys = _.keys(lapGroups);
+						
+						for(var i=lapGroupKeys.length-1;i>=0;i--){
+						
+							var laps = lapGroupKeys[i];
+							var lapGroupsSorted = _.sortBy(lapGroups[laps],'times');
+							
+							for(var j=lapGroupsSorted.length-1;j>=0;j--){
+							
+								var lapGroup = lapGroupsSorted[j];
+								var key = lapGroup["key"];
+								var time = lapGroup["time"];
+								var infractions = hashInfractions[key];
+								
+								html += "<tr height=\"185\">";
+								html += "<td><div style=\"width: 1125px\">" + key + "</div></td>";
+								if(infractions)
+									html += "<td><div style=\"width: 400px\">" + infractions["infractions"] + "</div></td>";
+								else
+									html += "<td><div style=\"width: 400px\">0</div></td>";
+								html += "<td><div style=\"width: 380px\">" + laps + "</div></td>";
+								html += "<td><div style=\"width: 400px\">" + time + " secs</div></td>";
+								html += "</tr>";
+							
+							}
+						
+						}
 				
 						//Okay we have all laps and infractions for each colorShape, print out a table
-						var html = "<table id=\"table\">";
-						for(var i=hashTimes.length-1;i>=0;i--){
+						
+						/*for(var i=hashTimes.length-1;i>=0;i--){
 							
 							var lapTimes = hashTimes[i];
 							var key = lapTimes["key"];
 							var infractions = hashInfractions[key];
 							
 							html += "<tr height=\"140\">";
-							html += "<td width=\"500\">" + key + "</td>";
+							html += "<td width=\"450\">" + key + "</td>";
 							if(infractions)
-								html += "<td width=\"175\">" + infractions["infractions"] + "</td>";
+								html += "<td width=\"150\">" + infractions["infractions"] + "</td>";
 							else
-								html += "<td width=\"175\">0</td>";
-							html += "<td width=\"175\">" + lapTimes["laps"] + "</td>";
-							html += "<td width=\"175\">" + lapTimes["time"] + "</td>";
+								html += "<td width=\"150\">0</td>";
+							html += "<td width=\"150\">" + lapTimes["laps"] + "</td>";
+							html += "<td width=\"175\">" + lapTimes["time"] + "secs </td>";
 							html += "</tr>";
 						
-						}
+						}*/
 						html += "</table>";
 						$("#text").html(html);
 						
