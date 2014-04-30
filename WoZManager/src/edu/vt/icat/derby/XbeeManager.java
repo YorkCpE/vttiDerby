@@ -64,7 +64,7 @@ public class XbeeManager {
 		{
 			try 
 			{
-				xbee.open(port, 9600);
+				xbee.open(port, 115200);
 				xbeeConnected=checkNodeIdentifier(xbee);
 			} catch (XBeeException e) 
 			{
@@ -161,9 +161,9 @@ public class XbeeManager {
 		try {
 			return xbee.sendSynchronous(txRequest16,timeout);
 		} catch (XBeeTimeoutException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (XBeeException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		
 		return null;
