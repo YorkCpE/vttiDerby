@@ -2,6 +2,7 @@ package edu.vt.icat.derby;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.rapplogic.xbee.api.XBeeAddress16;
@@ -67,7 +68,8 @@ public class HeartbeatMonitor extends Thread
 				XBeeAddress16 addr = new XBeeAddress16(myAddr[0],myAddr[1]);
 				
 				//create a transmission request with the address and the payload
-				TxRequest16 txRequest = new TxRequest16(addr, payload);
+				//TxRequest16 txRequest = new TxRequest16(addr, payload);
+				TxRequest16 txRequest = new TxRequest16(addr, new Random().nextInt(32), payload);
 
 				//send a synchronous request and wait for the response. Will time out after 500 ms
 				TxStatusResponse response = (TxStatusResponse) xbee.sendSynchronousRequest(txRequest,500);

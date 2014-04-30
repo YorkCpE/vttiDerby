@@ -64,7 +64,7 @@ public class XbeeManager {
 		{
 			try 
 			{
-				xbee.open(port, 115200);
+				xbee.open(port, 57600);
 				xbeeConnected=checkNodeIdentifier(xbee);
 			} catch (XBeeException e) 
 			{

@@ -307,6 +307,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				System.out.println("Host IP Set to "+newHostIP);
 				
 				wozManagerAddress = new NetAddress(newHostIP, managerListeningPort);
+				connectedToWoZManager=false;
 			}
 		})
 	     ;
@@ -344,7 +345,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		lastManagerEcho=System.currentTimeMillis();
 		registredWithManager=true;
 		
-		System.out.println("Client Registered with Manager");
+		System.out.println("Client Registered with Manager on "+wozManagerAddress);
 	}
 
 	/**
