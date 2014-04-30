@@ -335,7 +335,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	{
 		NetAddress manager = new NetAddress(managerIP, managerPort);
 		
-		if(!manager.isvalid())
+		if(args.compareToIgnoreCase(myCurrentIP)!=0)
 		{
 			return;
 		}
@@ -424,9 +424,18 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	/**
 	 * The draw() loop is repeatedly called by the Processing library
 	 */
+	
+	long lastMessage=-1;
 	public void draw() 
 	{
 
+		if(Math.abs(System.currentTimeMillis()-lastMessage)>1000)
+		{
+			lastMessage=System.currentTimeMillis();
+			sendLapStartStop();
+		}
+		
+		
 		//set the background to black
 		background(0);
 
