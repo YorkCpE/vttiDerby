@@ -425,9 +425,17 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	 * The draw() loop is repeatedly called by the Processing library
 	 */
 	
-	long lastMessage=-1;
+	private boolean arduinoDebug=false;
+	private long lastMessage=-1;
 	public void draw() 
-	{	
+	{
+
+		if(Math.abs(System.currentTimeMillis()-lastMessage)>1000 && arduinoDebug==true)
+		{
+			lastMessage=System.currentTimeMillis();
+			sendLapStartStop();
+		}
+		
 		
 		//set the background to black
 		background(0);
