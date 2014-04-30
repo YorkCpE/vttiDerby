@@ -3,6 +3,7 @@ package edu.vt.icat.derby;
 import java.util.Date;
 
 import netP5.NetAddress;
+import netP5.NetInfo;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
 import oscP5.OscP5;
@@ -92,7 +93,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	{
 		//establish connection with WoZManager
 		localHost = new OscP5(this, DEFAULT_CLIENT_PORT);
-		myCurrentIP=localHost.ip();
+		myCurrentIP=NetInfo.lan();
 		myCurrentPort=DEFAULT_CLIENT_PORT;
 
 		//plug the echo and echo ack commands so we don't have to directly process these messages
@@ -464,9 +465,13 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 		//print whether the WoZClient is connected to the WozManager
 		text((connectedToWoZManager)?"Connected To Manager":"No Manager Connection",10,400);
+		
+		//print out LAN IP
+		text("My IP: "+myCurrentIP,10,450);
 
 		//print whether the WoZClient is connected to the current Arduino
 		text((connectedToArduino)?"Connected To Arduino":"No Arduino Connection",10,500);
+		
 		
 		if(keyPressed && !locked)
 		{
