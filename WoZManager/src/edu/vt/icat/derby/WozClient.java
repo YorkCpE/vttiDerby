@@ -427,14 +427,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	
 	long lastMessage=-1;
 	public void draw() 
-	{
-
-		if(Math.abs(System.currentTimeMillis()-lastMessage)>1000)
-		{
-			lastMessage=System.currentTimeMillis();
-			sendLapStartStop();
-		}
-		
+	{	
 		
 		//set the background to black
 		background(0);
