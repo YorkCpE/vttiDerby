@@ -23,6 +23,8 @@
     </div>
     <div id="grouptext">
     </div>
+    <div id="heattext">
+    </div>
 </div>
   
   <script type="text/javascript">
@@ -31,7 +33,7 @@
 
 	onload=function(){
 	
-		setInterval(function(){refresh();}, 5000);
+		setInterval(function(){refresh();}, 1000);
 	}
 	
 	function compare(a,b) {
@@ -55,25 +57,44 @@
 		var Laps = Parse.Object.extend("Lap");
 		var query = new Parse.Query(Laps);
 		var groupNumber = -1;
-		//query.ascending('createdAt');
-		query.find({
-		  success: function(laps) {
+		var heatNumber = -1;
+		query.descending("group");
+		query.first({
+		  success: function(lap) {
 			// The object was retrieved successfully.
-			for(var i=0;i<laps.length;i++){
+			/*for(var i=0;i<laps.length;i++){
 				
 				var g = laps[i].get("group");
 				if(g > groupNumber)
 					groupNumber = g;
 			}
 			
-			//Got latest group number
-			if(groupNumber >= 0){
+			for(var i=0;i<laps.length;i++){
 			
-				$("#grouptext").html("Heat # " + groupNumber);
+				var g = laps[i].get("group");
+				var h = laps[i].get("heat");
+				if(g == groupNumber){
+				
+					if(h > heatNumber)
+						heatNumber = h;
+				
+				}
+			
+			}*/
+			
+			groupNumber = lap.get("group");
+			heatNumber = lap.get("heat");
+			
+			//Got latest group number
+			if(groupNumber >= 0 && heatNumber >= 0){
+			
+				$("#grouptext").html("Group " + groupNumber);
+				$("#heattext").html("Heat # " + heatNumber);
 				
 				//Get all laps for group number
 				var query = new Parse.Query(Laps);
 				query.equalTo("group",groupNumber);
+				query.equalTo("heat",heatNumber);
 				query.find({
 				  success: function(laps) {
 					// The object was retrieved successfully.

@@ -30,9 +30,20 @@
 {
 
 	position:absolute;
-	left:3500px;
-    top:200px;
+	left:3450px;
+    top:175px;
     font-size:100px;
-    width:300px;
+    width:400px;
+    text-align:center;
+}
+
+#heattext
+{
+
+	position:absolute;
+	left:3450px;
+    top:325px;
+    font-size:100px;
+    width:400px;
     text-align:center;
 }

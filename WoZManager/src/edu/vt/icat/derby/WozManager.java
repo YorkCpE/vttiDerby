@@ -109,7 +109,11 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 	//Need to set this in the GUI for each group change
 	private int currentGroupNumber = 0;
 	
+	//Need to set this in the GUI for each heat change
+	private int currentHeatNumber = 0;
+	
 	private Textfield currentGroupTextField;
+	private Textfield currentHeatTextField;
 
 	public WozManager()
 	{
@@ -269,6 +273,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		infractionObject.put("shape", splits[1]);
 		infractionObject.put("type", "Collision");
 		infractionObject.put("group", currentGroupNumber);
+		infractionObject.put("heat", currentHeatNumber);
 		infractionObject.saveInBackground();
 
 		//pass command off to the ArduinoSender
@@ -294,6 +299,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		infractionObject.put("shape", splits[1]);
 		infractionObject.put("type", "LaneViolation");
 		infractionObject.put("group", currentGroupNumber);
+		infractionObject.put("heat", currentHeatNumber);
 		infractionObject.saveInBackground();
 		
 		//pass off command to the ArduinoSender
@@ -324,6 +330,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 			lapObject.put("shape", splits[1]);
 			lapObject.put("time", laptime);
 			lapObject.put("group", currentGroupNumber);
+			lapObject.put("heat", currentHeatNumber);
 			lapObject.saveInBackground();
 		}
 
@@ -438,6 +445,38 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 						currentGroupNumber=value;
 					}
 				});
+		
+		currentHeatTextField = gui.addTextfield("Current Heat")
+				.setPosition(100,(float) (height*.75))
+				.setSize(40,40)
+				.setFocus(true)
+				.setFont(createFont("arial",20))
+				.setColor(color(255,0,0))
+				.addListener(new ControlListener() {
+
+					@Override
+					public void controlEvent(ControlEvent arg0) 
+					{
+						String text=arg0.getStringValue();
+
+						int value=-1;
+						try
+						{
+							value = new Integer(text);
+						}
+						catch (Exception e)
+						{
+
+						}
+						
+						if(value<=0)
+						{
+							return;
+						}
+						
+						currentHeatNumber=value;
+					}
+				});
 	}
 
 	private static final int DERBY_CAR_TIMEOUT=10000;
@@ -499,6 +538,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 
 		text(myIp,10,(float) (height*.9));
 		text("Current Group Number: "+currentGroupNumber,10,(float) (height*.95));
+		text("Current Heat Number: "+currentHeatNumber,200,(float) (height*.95));
 	}
 
 	/**
