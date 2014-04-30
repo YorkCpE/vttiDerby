@@ -106,7 +106,7 @@ public class HeartbeatMonitor extends Thread
 
 				//sleep the thread for 100ms to not overload the Xbee network
 				try {
-					Thread.sleep(100);
+					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

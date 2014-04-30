@@ -440,7 +440,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 				});
 	}
 
-	private static final int DERBY_CAR_TIMEOUT=5000;
+	private static final int DERBY_CAR_TIMEOUT=10000;
 
 	/**
 	 * Processing draw() loop
