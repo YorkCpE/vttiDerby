@@ -94,6 +94,8 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 	private boolean registredWithManager=false;
 
+	protected boolean manuallySetHostAddress;
+
 	public WozClient() 
 	{
 		String preferedIPAddress="";
@@ -113,7 +115,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			{
 				System.out.printf("InetAddress: %s\n", inetAddress);
 				
-				if(inetAddress.getHostAddress().contains("192.168.")==true)
+				if(inetAddress.getHostAddress().contains("192.168.2.")==true)
 				{
 					preferedIPAddress=inetAddress.getHostAddress();
 				}
@@ -333,7 +335,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		.setPosition(10,525)
 		.setSize(100,40)
 		.setFocus(true)
-		.setFont(createFont("arial",20))
+		.setFont(createFont("arial",12))
 		.setColor(color(255,0,0))
 		.addListener(new ControlListener() {
 
@@ -345,6 +347,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 				wozManagerAddress = new NetAddress(newHostIP, managerListeningPort);
 				connectedToWoZManager=false;
+				manuallySetHostAddress=true;
 			}
 		})
 		;
@@ -372,6 +375,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		WozControlMessage registration = new WozControlMessage(WozControlMessage.REGISTRATION, myCurrentIP, myCurrentPort, "");
 
 		OscP5.flush(registration.generateOscMessage(), new NetAddress("255.255.255.255", WozManager.MANAGER_DEFAULT_LISTENING_PORT));
+		
 	}
 
 	public void receiveRegistrationAck(String managerIP, int managerPort, String args)
