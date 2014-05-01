@@ -69,7 +69,7 @@ public class HeartbeatMonitor extends Thread
 				
 				//create a transmission request with the address and the payload
 				//TxRequest16 txRequest = new TxRequest16(addr, payload);
-				TxRequest16 txRequest = new TxRequest16(addr, new Random().nextInt(32), payload);
+				TxRequest16 txRequest = new TxRequest16(addr, new Random().nextInt(128), payload);
 
 				//send a synchronous request and wait for the response. Will time out after 500 ms
 				TxStatusResponse response = (TxStatusResponse) xbee.sendSynchronousRequest(txRequest,500);

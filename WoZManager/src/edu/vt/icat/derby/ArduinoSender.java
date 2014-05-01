@@ -1,5 +1,6 @@
 package edu.vt.icat.derby;
 
+import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.rapplogic.xbee.api.XBeeAddress16;
@@ -54,17 +55,19 @@ public class ArduinoSender extends Thread
 			XBeeAddress16 addr = new XBeeAddress16(myAddr[0],myAddr[1]);
 			
 			//create a transmit request
-			TxRequest16 txRequest = new TxRequest16(addr, payload);
+			TxRequest16 txRequest = new TxRequest16(addr, new Random().nextInt(128),payload);
 			
 			//send the request asynchronously, does not wait for a response
-			if(wozCommand.getCommand().equalsIgnoreCase(WoZCommand.LAP_STARTSTOP))
+			xbee.sendSynchronousRequest(txRequest, 1000);
+			
+			/*if(wozCommand.getCommand().equalsIgnoreCase(WoZCommand.LAP_STARTSTOP))
 			{
-				xbee.sendSynchronousRequest(txRequest, 1000);
+				
 			}
 			else
 			{
 				xbee.sendAsyncRequest(txRequest);
-			}
+			}*/
 			
 		}
 	}
