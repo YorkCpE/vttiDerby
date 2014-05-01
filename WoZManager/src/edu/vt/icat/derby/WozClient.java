@@ -508,10 +508,24 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		{
 			connectedToArduino=true;
 		}
-
+		
+		textSize(24);
+		//Print running timer
+		if(startStopDate != null){
+			
+			long laptime = Math.abs(startStopDate.getTime() - new Date().getTime()) / 1000;
+			text("Lap Timer: " + laptime + " secs",10,260);
+		}
+		else{
+			
+			text("Lap Timer: 0 secs",10,260);
+		}
+		textSize(16);
+		text("(SPACEBAR resets Lap Timer)",15,280);
+		textSize(28);
 		//print the current license plate shape and color
-		text(currentColor+" "+currentShape,10,300);
-
+		text(currentColor+" "+currentShape,10,320);
+		textSize(16);
 		//print whether the WoZClient is connected to the WozManager
 		text((connectedToWoZManager)?"Connected To Manager":"No Manager Connection",10,400);
 
@@ -536,6 +550,10 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			else if(key=='l')
 			{
 				sendCollisionWarning();
+			}
+			else if(key==' ')
+			{
+				changeHeat();
 			}
 		}
 
@@ -608,6 +626,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				setShape(shape);
 				connectedToArduino=false;
 			}
+
 		}
 	}
 
@@ -629,6 +648,11 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	{
 		currentColor=color;
 		startStopDate=null;
+	}
+	
+	private void changeHeat(){
+		
+		startStopDate = null;
 	}
 
 	/**
