@@ -104,9 +104,11 @@ public class PitStop extends PApplet implements ControlListener
 		background(000);
 		smooth();
 
+		frameRate(30);
+		
 		cp5 = new ControlP5(this);
 		// create a DropdownList
-		d1 = cp5.addDropdownList("myList-d1")
+		d1 = cp5.addDropdownList("Shapes")
 				.setPosition(10, 25)
 				;
 
@@ -120,9 +122,9 @@ public class PitStop extends PApplet implements ControlListener
 		
 		cp5.addTextfield("Host IP")
 	     .setPosition((float).75*width,(float).75*height)
-	     .setSize(100,40)
+	     .setSize(100,50)
 	     .setFocus(true)
-	     .setFont(createFont("arial",20))
+	     .setFont(createFont("arial",14))
 	     .setColor(color(255,0,0))
 	     .addListener(new ControlListener() {
 			

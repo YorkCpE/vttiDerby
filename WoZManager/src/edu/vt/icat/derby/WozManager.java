@@ -192,6 +192,7 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		{
 			return;
 		}
+		System.out.println("System Check: "+arduinoTarget);
 		
 		//pass command off to the ArduinoSender
 		xbeeQueue.add(new WoZCommand(LicenseColor.valueOf(splits[0]), LicenseShape.valueOf(splits[1]), WoZCommand.SYSTEM_CHECK, args));
@@ -399,6 +400,8 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		size(800,600);
 		background(0);
 
+		frameRate(10);
+		
 		gridStartX = 10;
 		gridStartY = 20;
 
