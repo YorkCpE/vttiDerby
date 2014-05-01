@@ -57,7 +57,15 @@ public class ArduinoSender extends Thread
 			TxRequest16 txRequest = new TxRequest16(addr, payload);
 			
 			//send the request asynchronously, does not wait for a response
-			xbee.sendAsyncRequest(txRequest);
+			if(wozCommand.getCommand().equalsIgnoreCase(WoZCommand.LAP_STARTSTOP))
+			{
+				xbee.sendSynchronousRequest(txRequest, 1000);
+			}
+			else
+			{
+				xbee.sendAsyncRequest(txRequest);
+			}
+			
 		}
 	}
 }
