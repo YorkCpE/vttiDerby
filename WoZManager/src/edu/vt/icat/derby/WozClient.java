@@ -1,6 +1,11 @@
 package edu.vt.icat.derby;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 
 import netP5.NetAddress;
 import netP5.NetInfo;
@@ -65,10 +70,10 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 	//my IP address
 	private String myCurrentIP="";
-	
+
 	//wozmanager hostname
 	private String managerHostName=WozManager.DefaultHostName;
-	
+
 	//WoZManger listening port
 	private int managerListeningPort=WozManager.MANAGER_DEFAULT_LISTENING_PORT;
 
@@ -81,19 +86,52 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	//maximum time allowed between Arduino echos, will be considered
 	//disconnected if violated
 	private static final int ARDUINO_TIMEOUT=10000;
-	
+
 	//Start/Stop timestamp to send laptime
 	private Date startStopDate = null;
 
 	private Button managerDHCP;
-	
+
 	private boolean registredWithManager=false;
 
 	public WozClient() 
 	{
+		String preferedIPAddress="";
+		
+		Enumeration<NetworkInterface> nets = null;
+		try {
+			nets = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
+		for (NetworkInterface netint : Collections.list(nets))
+		{
+			System.out.printf("Display name: %s\n", netint.getDisplayName());
+			System.out.printf("Name: %s\n", netint.getName());
+			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+			for (InetAddress inetAddress : Collections.list(inetAddresses)) 
+			{
+				System.out.printf("InetAddress: %s\n", inetAddress);
+				
+				if(inetAddress.getHostAddress().contains("192.168.")==true)
+				{
+					preferedIPAddress=inetAddress.getHostAddress();
+				}
+			}
+			System.out.printf("\n");
+		}
+
+
 		//establish connection with WoZManager
-		localHost = new OscP5(this, DEFAULT_CLIENT_PORT);
-		myCurrentIP=NetInfo.lan();
+		if(preferedIPAddress.isEmpty())
+		{
+			localHost = new OscP5(this, DEFAULT_CLIENT_PORT);
+		}
+		else
+		{
+			localHost = new OscP5(this, preferedIPAddress, DEFAULT_CLIENT_PORT, OscP5.UDP);
+		}
+		myCurrentIP=(preferedIPAddress.isEmpty())?NetInfo.lan():preferedIPAddress;
 		myCurrentPort=DEFAULT_CLIENT_PORT;
 
 		//plug the echo and echo ack commands so we don't have to directly process these messages
@@ -265,12 +303,12 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				.setColorActive(color(0))
 				.setColorForeground(color(255, 100,0))
 				;
-		
+
 
 		managerDHCP = cp5.addButton("DHCP")
 				.setPosition(checkArduinoButton.getAbsolutePosition().x,350)
 				.addListener(new ControlListener() {
-					
+
 					@Override
 					public void controlEvent(ControlEvent arg0) 
 					{
@@ -291,29 +329,29 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			ListBoxItem lbi = carShapeListBox.addItem(shape.toString(), shape.ordinal());
 			lbi.setColorBackground(0xffff0000);
 		}
-		
+
 		cp5.addTextfield("Host IP")
-	     .setPosition(10,525)
-	     .setSize(100,40)
-	     .setFocus(true)
-	     .setFont(createFont("arial",20))
-	     .setColor(color(255,0,0))
-	     .addListener(new ControlListener() {
-			
+		.setPosition(10,525)
+		.setSize(100,40)
+		.setFocus(true)
+		.setFont(createFont("arial",20))
+		.setColor(color(255,0,0))
+		.addListener(new ControlListener() {
+
 			@Override
 			public void controlEvent(ControlEvent arg0) 
 			{
 				String newHostIP=arg0.getStringValue();
 				System.out.println("Host IP Set to "+newHostIP);
-				
+
 				wozManagerAddress = new NetAddress(newHostIP, managerListeningPort);
 				connectedToWoZManager=false;
 			}
 		})
-	     ;
+		;
 
 	}
-	
+
 	private long lastAttempTime=System.currentTimeMillis();
 	private void attemptManagerRegistration()
 	{
@@ -321,30 +359,30 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		{
 			return;
 		}
-		
+
 		lastAttempTime=System.currentTimeMillis();
-		
+
 		connectedToWoZManager=false;
-		
+
 		WozControlMessage registration = new WozControlMessage(WozControlMessage.REGISTRATION, myCurrentIP, myCurrentPort, "");
-		
+
 		OscP5.flush(registration.generateOscMessage(), new NetAddress("255.255.255.255", WozManager.MANAGER_DEFAULT_LISTENING_PORT));
 	}
-	
+
 	public void receiveRegistrationAck(String managerIP, int managerPort, String args)
 	{
 		NetAddress manager = new NetAddress(managerIP, managerPort);
-		
+
 		if(args.compareToIgnoreCase(myCurrentIP)!=0)
 		{
 			return;
 		}
-		
+
 		wozManagerAddress=manager;
 		connectedToWoZManager=true;
 		lastManagerEcho=System.currentTimeMillis();
 		registredWithManager=true;
-		
+
 		System.out.println("Client Registered with Manager on "+wozManagerAddress);
 	}
 
@@ -383,21 +421,21 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		long laptime = -1;
 		Date now = new Date();
 		if(startStopDate != null){
-			
-			
+
+
 			laptime = Math.abs(startStopDate.getTime() - now.getTime()) / 1000;
 			startStopDate=now;
-			
+
 		}
 		else
 		{
 			startStopDate=new Date();
 		}
-		
+
 		//send OSC message
 		WoZCommand lapStartStop = new WoZCommand(currentColor,currentShape,WoZCommand.LAP_STARTSTOP,String.valueOf(laptime));
 		localHost.send(lapStartStop.generateOscMessage(), wozManagerAddress);
-		
+
 		if(enableLocalXbee)
 		{
 			//send xbee message
@@ -424,7 +462,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	/**
 	 * The draw() loop is repeatedly called by the Processing library
 	 */
-	
+
 	private boolean arduinoDebug=false;
 	private long lastMessage=-1;
 	public void draw() 
@@ -435,8 +473,8 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			lastMessage=System.currentTimeMillis();
 			sendLapStartStop();
 		}
-		
-		
+
+
 		//set the background to black
 		background(0);
 
@@ -476,14 +514,14 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 
 		//print whether the WoZClient is connected to the WozManager
 		text((connectedToWoZManager)?"Connected To Manager":"No Manager Connection",10,400);
-		
+
 		//print out LAN IP
 		text("My IP: "+myCurrentIP,10,450);
 
 		//print whether the WoZClient is connected to the current Arduino
 		text((connectedToArduino)?"Connected To Arduino":"No Arduino Connection",10,500);
-		
-		
+
+
 		if(keyPressed && !locked)
 		{
 			locked=true;
@@ -502,7 +540,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		}
 
 	}
-	
+
 	private boolean locked=false;
 	public void keyReleased()
 	{
@@ -513,7 +551,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 	 * Minimum time allowed between Arduino Echo requests. Don't want to overload the network
 	 */
 	private static final long ALLOWABLE_REQUESTS_INTERVAL=1000;
-	
+
 	/**
 	 * Time of last heartbeat request being sent
 	 */
@@ -560,7 +598,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 				setColor(color);
 				connectedToArduino=false;
 			}
-			
+
 			//something happened in the Car Shape Listbox
 			else if(theEvent.getName().equals("Car Shape"))
 			{
