@@ -30,10 +30,35 @@
   <script type="text/javascript">
 	
     Parse.initialize("x1fyYxbICQaevIesJPAHYnahjSkAySmfnXpgGWez", "vYmynVETVWV3iPor4LpXDzNM47i6qi0wHrCxLrVE");
+	var driverNameHash = {};
+	getDriverNames();
 
 	onload=function(){
 	
 		setInterval(function(){refresh();}, 1000);
+	}
+	
+	function getDriverNames(){
+	
+		var Laps = Parse.Object.extend("Driver");
+		var query = new Parse.Query(Laps);
+		query.find({
+		  success: function(drivers) {
+		  
+		  	for(var i=0;i<drivers.length;i++){
+					
+				var key = drivers[i].get("color") + "-" + drivers[i].get("shape") + "-" + drivers[i].get("group");
+				driverNameHash[key] = drivers[i].get("name");	
+			}
+		  },
+		  error: function(object, error) {
+			// The object was not retrieved successfully.
+			
+		  }
+		});
+		  
+		
+	
 	}
 	
 	function compare(a,b) {
@@ -105,7 +130,7 @@
 					//Build hash of color-shapes, laps and total time
 					for(var i=0;i<laps.length;i++){
 					
-						var key = laps[i].get("color") + "-" + laps[i].get("shape");
+						var key = laps[i].get("color") + "-" + laps[i].get("shape") + "-" + groupNumber;
 						var value = hashTimes[key];
 						if(value == null){
 						
@@ -128,7 +153,7 @@
 						//Build hash of color-shaps with infractions
 						for(var i=0;i<infractions.length;i++){
 					
-							var key = infractions[i].get("color") + "-" + infractions[i].get("shape");
+							var key = infractions[i].get("color") + "-" + infractions[i].get("shape") + "-" + groupNumber;
 							var value = hashInfractions[key];
 							if(value == null){
 							
@@ -161,7 +186,7 @@
 								var infractions = hashInfractions[key];
 								
 								html += "<tr height=\"185\">";
-								html += "<td><div style=\"width: 1125px\">" + key + "</div></td>";
+								html += "<td><div style=\"width: 1125px\">" + driverNameHash[key] + "</div></td>";
 								if(infractions)
 									html += "<td><div style=\"width: 400px\">" + infractions["infractions"] + "</div></td>";
 								else
