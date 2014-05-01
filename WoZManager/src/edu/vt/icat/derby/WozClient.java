@@ -276,8 +276,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 					@Override
 					public void controlEvent(ControlEvent arg0) 
 					{
-						checkArduinoConnection=true;
-						lastArduinoEcho=-1;
+						sendSystemCheck();
 					}
 				});
 
@@ -350,6 +349,12 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		})
 		;
 
+	}
+
+	private void sendSystemCheck() 
+	{
+		WoZCommand systemCheckCommand = new WoZCommand(currentColor, currentShape, WoZCommand.SYSTEM_CHECK, "");
+		OscP5.flush(systemCheckCommand.generateOscMessage(), wozManagerAddress);
 	}
 
 	private long lastAttempTime=System.currentTimeMillis();
@@ -554,6 +559,10 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			else if(key==' ')
 			{
 				changeHeat();
+			}
+			else if(key==';')
+			{
+				sendSystemCheck();
 			}
 		}
 
