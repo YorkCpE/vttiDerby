@@ -225,8 +225,8 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		WozControlMessage registrationAck = 
 				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, clientIP);
 
-		server.send(registrationAck.generateOscMessage(), new NetAddress("255.255.255.255", WozClient.DEFAULT_CLIENT_PORT));
-		//server.send(registrationAck.generateOscMessage(), newClient);
+		//server.send(registrationAck.generateOscMessage(), new NetAddress("255.255.255.255", WozClient.DEFAULT_CLIENT_PORT));
+		server.send(registrationAck.generateOscMessage(), newClient);
 	}
 
 	/**
