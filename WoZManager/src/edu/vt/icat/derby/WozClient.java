@@ -108,14 +108,14 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 		}
 		for (NetworkInterface netint : Collections.list(nets))
 		{
-			System.out.printf("Display name: %s\n", netint.getDisplayName());
-			System.out.printf("Name: %s\n", netint.getName());
+			//System.out.printf("Display name: %s\n", netint.getDisplayName());
+			//System.out.printf("Name: %s\n", netint.getName());
 			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
 			for (InetAddress inetAddress : Collections.list(inetAddresses)) 
 			{
 				System.out.printf("InetAddress: %s\n", inetAddress);
 				
-				if(inetAddress.getHostAddress().contains("192.168.2.")==true)
+				if(inetAddress.getHostAddress().contains("192.168.1.")==true)
 				{
 					preferedIPAddress=inetAddress.getHostAddress();
 				}
@@ -191,7 +191,7 @@ public class WozClient extends PApplet implements ControlListener,OscEventListen
 			lastArduinoEcho=lastCheckin;
 		}
 
-		//System.out.println("Last heart from "+color+","+shape+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
+		System.out.println("Last heart from "+color+","+shape+" "+(double)((System.currentTimeMillis()-lastCheckin)/(double)1000)+" seconds ago");
 	}
 	/**
 	 * Called when an echo message is received. Should respond with EchoAsk to hostname and port.

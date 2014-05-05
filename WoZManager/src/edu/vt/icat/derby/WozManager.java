@@ -1,5 +1,10 @@
 package edu.vt.icat.derby;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import netP5.NetAddress;
+import netP5.NetInfo;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
 import oscP5.OscP5;
@@ -124,7 +130,44 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		//create the OSC server and plug all the relevant messages
 		//a plugged message will automatically be called when it is received
 		//the function name must match exactly
-		server = new OscP5(this, MANAGER_DEFAULT_LISTENING_PORT);
+		
+String preferedIPAddress="";
+		
+		Enumeration<NetworkInterface> nets = null;
+		try {
+			nets = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
+		for (NetworkInterface netint : Collections.list(nets))
+		{
+			//System.out.printf("Display name: %s\n", netint.getDisplayName());
+			//System.out.printf("Name: %s\n", netint.getName());
+			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+			for (InetAddress inetAddress : Collections.list(inetAddresses)) 
+			{
+				System.out.printf("InetAddress: %s\n", inetAddress);
+				
+				if(inetAddress.getHostAddress().contains("192.168.1.")==true)
+				{
+					preferedIPAddress=inetAddress.getHostAddress();
+				}
+			}
+			System.out.printf("\n");
+		}
+
+
+		//establish connection with WoZManager
+		if(preferedIPAddress.isEmpty())
+		{
+			server = new OscP5(this, MANAGER_DEFAULT_LISTENING_PORT);
+		}
+		else
+		{
+			server = new OscP5(this, preferedIPAddress, MANAGER_DEFAULT_LISTENING_PORT, OscP5.UDP);
+		}
+		myIp=(preferedIPAddress.isEmpty())?NetInfo.lan():preferedIPAddress;
+
 		server.plug(this,"receiveEcho",WozControlMessage.ECHO);
 		server.plug(this,"receiveEchoAck",WozControlMessage.ECHO_ACK);
 		server.plug(this, "heartBeat", WozControlMessage.HEARTBEAT);
@@ -135,7 +178,6 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		server.plug(this, "lapStartStop", WoZCommand.LAP_STARTSTOP);
 		server.plug(this, "systemCheck", WoZCommand.SYSTEM_CHECK);
 
-		myIp=server.ip();
 
 		xbeeQueue = new LinkedBlockingQueue<WoZCommand>();
 		heartBeatQueue = new LinkedBlockingQueue<HeartBeatResponseMessage>();
@@ -223,9 +265,9 @@ public class WozManager extends PApplet implements OscEventListener,ControlListe
 		//activeClients.add(newClient);
 
 		WozControlMessage registrationAck = 
-				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, server.ip(), MANAGER_DEFAULT_LISTENING_PORT, clientIP);
+				new WozControlMessage(WozControlMessage.REGISTRATION_ACK, myIp, MANAGER_DEFAULT_LISTENING_PORT, clientIP);
 
-		//server.send(registrationAck.generateOscMessage(), new NetAddress("255.255.255.255", WozClient.DEFAULT_CLIENT_PORT));
+		server.send(registrationAck.generateOscMessage(), new NetAddress("255.255.255.255", WozClient.DEFAULT_CLIENT_PORT));
 		server.send(registrationAck.generateOscMessage(), newClient);
 	}
 
