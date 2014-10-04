@@ -1,12 +1,12 @@
-#include <XBee.h>
-#include <pt.h>
+#include <SoftwareSerial.h>
 
+#include <XBee.h>
 
 //pins for control buttons
-const int LaneViolationPin=2; 
-const int CollisionWarningPin=3;
-const int LapPin=4;
-const int SystemCheckPin=5;
+const int LaneViolationPin=0; 
+const int CollisionWarningPin=1;
+const int LapPin=2;
+const int SystemCheckPin=3;
 
 //my address
 const byte TriangleRed=0x09;
@@ -27,12 +27,7 @@ const byte commandBytes[]={
 const byte buttonPins[]={
   LaneViolationPin,CollisionWarningPin,LapPin,SystemCheckPin};
 
-int buttonStates[]={
-  0,0,0,0};
-int lastDebounceTimes[]={
-  0,0,0,0};
-
-const byte myVehicle=TriangleRed;
+const byte myVehicle=TriangleBlue;
 
 XBee xbee = XBee();
 
@@ -44,9 +39,15 @@ uint8_t payload[] = {
 
 TxStatusResponse txStatus = TxStatusResponse();
 
+SoftwareSerial mySerial(2,3);
+
 void setup()
 {
-  Serial.begin(57600);
+  Serial.begin(9600);
+  mySerial.begin(9600);
+
+  //xbee.setSerial(mySerial);
+  xbee.setSerial(Serial);
 
   //setup button pins
   pinMode(LaneViolationPin,INPUT);
@@ -55,9 +56,36 @@ void setup()
   pinMode(SystemCheckPin,INPUT);
 }
 
+const boolean DEBUG=false;
+
 boolean packetSent=false;
 void sendCommandByte(byte commandByte, byte vehicle)
 {
+  if(DEBUG)
+    Serial.println("Sending Command ");
+  
+  if(DEBUG){
+  if(commandByte==0xA)
+  {
+     Serial.println("Lane Violation"); 
+  }
+  else if(commandByte==0xB)
+  {
+    Serial.println("Collision Warning");
+  }
+  else if(commandByte==0xC)
+  {
+    Serial.println("Lap Start/Stop");
+  }
+  else if(commandByte==0xD)
+  {
+    Serial.println("Heart Beat");
+  }
+  else if(commandByte==0xE)
+  {
+    Serial.println("System Check");
+  }}
+  
   byte argBytes[]={
     0x0,0x0    };
 
@@ -66,63 +94,31 @@ void sendCommandByte(byte commandByte, byte vehicle)
   byte payload[]={
     commandByte,argBytes[0],argBytes[1],checkSum    };
 
-  Tx16Request tx = Tx16Request(vehicle, payload, sizeof(payload));  
+  Tx16Request tx = Tx16Request(myVehicle, payload, sizeof(payload));  
 
   xbee.send(tx);
-
-  packetSent=true;
 }
 
-const long debounceDelay=50;
-boolean debouncePin(int pin)
-{
-  int* lastButtonState=&buttonStates[pin%4];
-  int* lastDebounceTime=&lastDebounceTimes[pin%4];
-  int buttonState=0;
 
-  // read the state of the switch into a local variable:
-  int reading = digitalRead(pin);
-
-  // check to see if you just pressed the button 
-  // (i.e. the input went from LOW to HIGH),  and you've waited 
-  // long enough since the last press to ignore any noise:  
-
-  // If the switch changed, due to noise or pressing:
-  if (reading != *lastButtonState) {
-    // reset the debouncing timer
-    *lastDebounceTime = millis();
-  } 
-
-  if ((millis() - *lastDebounceTime) > debounceDelay) {
-    // whatever the reading is at, it's been there for longer
-    // than the debounce delay, so take it as the actual current state:
-
-    // if the button state has changed:
-    if (reading != buttonState) 
-    {
-      buttonState = reading;
-
-      // only toggle the LED if the new button state is HIGH
-      if (buttonState == HIGH) 
-      {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
+long last = millis();
 void loop()
 {
-
-  for(int i=0;i<4;i++)
+  /*for(int i=0;i<4;i++)
   {
-    if(debouncePin(buttonPins[i]))
+    if(analogRead(i)>1000)
     {
       sendCommandByte(commandBytes[i],myVehicle); 
+      packetSent=true;
     }
+  }*/
+  
+  if(millis()-last>5000)
+  {
+     sendCommandByte(SYSTEM_CHECK,myVehicle); 
+     packetSent=true;
+     last=millis();
   }
-
+ 
   // after sending a tx request, we expect a status response
   // wait up to 5 seconds for the status response
   if(packetSent)
@@ -140,20 +136,23 @@ void loop()
         if (txStatus.getStatus() == SUCCESS) 
         {
           // success.  time to celebrate
+          Serial.println("Success!");
         } 
         else 
         {
           // the remote XBee did not receive our packet. is it powered on?
+          Serial.println("Did not receive!");
         }
       }      
     } 
     else if (xbee.getResponse().isError()) 
     {
-
+        Serial.println("Error!");
     } 
     else 
     {
       // local XBee did not provide a timely TX Status Response.  Radio is not configured properly or connected
+      Serial.println("Bad Error!");
     }
   }
 
