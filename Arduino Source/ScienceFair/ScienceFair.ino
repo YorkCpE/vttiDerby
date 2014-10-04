@@ -3,16 +3,17 @@
 #include <XBee.h>
 
 //pins for control buttons
-const int LaneViolationPin=0; 
-const int CollisionWarningPin=1;
-const int LapPin=2;
-const int SystemCheckPin=3;
+const int LaneViolationPin=4; 
+const int CollisionWarningPin=5;
+const int LapPin=6;
+const int SystemCheckPin=7;
 
 //my address
 const byte TriangleRed=0x09;
 const byte TriangleBlue=0X0A;
 const byte TriangleGreen=0x0B;
 const byte TriangleYellow=0x0C;
+const byte ManagerAddress=0x01;
 
 //command codes
 const byte LANE_VIOLATION=0xA;
@@ -24,7 +25,7 @@ const byte SYSTEM_CHECK=0xE;
 
 const byte commandBytes[]={
   LANE_VIOLATION,COLLISION_WARNING,LAP_STARTSTOP,SYSTEM_CHECK};
-const byte buttonPins[]={
+const int buttonPins[]={
   LaneViolationPin,CollisionWarningPin,LapPin,SystemCheckPin};
 
 const byte myVehicle=TriangleBlue;
@@ -39,12 +40,9 @@ uint8_t payload[] = {
 
 TxStatusResponse txStatus = TxStatusResponse();
 
-SoftwareSerial mySerial(2,3);
-
 void setup()
 {
   Serial.begin(9600);
-  mySerial.begin(9600);
 
   //xbee.setSerial(mySerial);
   xbee.setSerial(Serial);
@@ -96,32 +94,87 @@ void sendCommandByte(byte commandByte, byte vehicle)
 
   Tx16Request tx = Tx16Request(myVehicle, payload, sizeof(payload));  
 
-  xbee.send(tx);
+  if(!DEBUG)
+  {
+    xbee.send(tx);
+  }
 }
 
+const int debounceDelay=50;
+static int currentButtonState[]={0,0,0,0};
+static int lastButtonState[]={0,0,0,0}; 
+static int lastDebounceTime[]={0,0,0,0};
+
+boolean buttonPressed(int pin)
+{ 
+  boolean returnState=false;
+  
+  int reading=digitalRead(pin);
+
+  if(reading!= lastButtonState[pin%4])
+  {
+    lastDebounceTime[pin%4]=millis(); 
+  }
+  
+  if ((millis() - lastDebounceTime[pin%4]) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer
+    // than the debounce delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (reading != currentButtonState[pin%4]) {
+      currentButtonState[pin%4] = reading;
+
+      // only toggle the LED if the new button state is HIGH
+      if (currentButtonState[pin%4] == HIGH) 
+      {
+        if(DEBUG)
+        {
+           Serial.print("Button ");
+           Serial.print(pin);
+           Serial.println(" pressed.");
+           Serial.flush();
+        }
+        
+        returnState=true;
+      }
+      else
+      {
+         returnState=false;
+      }
+    }
+  }
+  
+  lastButtonState[pin%4]=reading;
+  
+  return returnState;
+}
 
 long last = millis();
+
 void loop()
 {
-  /*for(int i=0;i<4;i++)
+  for(int i=0;i<4;i++)
   {
-    if(analogRead(i)>1000)
+    if(buttonPressed(buttonPins[i]))
     {
       sendCommandByte(commandBytes[i],myVehicle); 
       packetSent=true;
+      last=millis();
     }
-  }*/
+  }
   
+  /*
+  static long last = millis();
   if(millis()-last>5000)
   {
      sendCommandByte(SYSTEM_CHECK,myVehicle); 
      packetSent=true;
      last=millis();
-  }
+  }*/
  
   // after sending a tx request, we expect a status response
   // wait up to 5 seconds for the status response
-  if(packetSent)
+  if(packetSent && !DEBUG)
   {
     packetSent=false;
     if (xbee.readPacket(5000)) 
