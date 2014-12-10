@@ -1,13 +1,13 @@
 //pins for the Speed LED
-const int speedGreenPin=2; 
-const int speedGroundPin=3; //PWM pin
-const int speedRedPin=4;
-const int speedBluePin=5; //PWM pin
+const int speedBluePin=2;
+const int speedGreenPin=3; 
+const int speedGroundPin=4; //PWM pin
+const int speedRedPin=5; //PWM pin
 
 //pins for the RGB LED for each warning
-const int greenPin=6; //PWM pin
+const int redPin=6; //PWM pin
 const int groundPin=7;
-const int redPin=8;
+const int greenPin=8;
 const int bluePin=9;
 
 //pin for the attached speaker
@@ -22,14 +22,30 @@ void setup()
   pinMode(bluePin,OUTPUT);
   pinMode(greenPin,OUTPUT);
   pinMode(redPin,OUTPUT);
+  
+  pinMode(speedGroundPin,OUTPUT);
+  pinMode(speedBluePin,OUTPUT);
+  pinMode(speedGreenPin,OUTPUT);
+  pinMode(speedRedPin,OUTPUT);
 
   //setup speed pins
   digitalWrite(speedGreenPin,LOW);
   digitalWrite(speedGroundPin,LOW);
   digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedGreenPin,LOW);
+  digitalWrite(speedGreenPin,LOW);  
+  
+  //setup speaker
+  setupBuzzer(speakerPin);
+  
+  playTone(4186,100);
+  delay(50);
+  playTone(3951,100);
+  delay(50);
+  playTone(3520,100);
+  delay(50);
+  playTone(2093,100);
+  
 }
-
 
 const byte LANE_VIOLATION=0xA;
 const byte COLLISION_WARNING=0xB;
@@ -45,7 +61,8 @@ byte readArray[4];
 
 void loop()
 {
-  while(Serial.available()>0)
+  speedLoop(0.8);
+  while(true)//Serial.available()>0)
   {
     readArray[counter%4]=Serial.read(); 
     counter++;
@@ -53,10 +70,10 @@ void loop()
     //determine if this packet is valid
     boolean validPacket=(readArray[0]^readArray[1]^readArray[2]^readArray[3])==0xff;
 
-    if(validPacket)
+    if(true)//validPacket)
     {
       //process this packet
-      byte commandByte=readArray[0];
+      byte commandByte=0xC;//readArray[0];
       byte args[2]={readArray[1],readArray[2]};
 
       if(commandByte==LANE_VIOLATION)
@@ -111,10 +128,18 @@ void executeLaneViolation()
   digitalWrite(redPin,HIGH);
   digitalWrite(greenPin,LOW);
   digitalWrite(bluePin,LOW);
+  digitalWrite(speedRedPin,HIGH);
+  digitalWrite(speedGreenPin,LOW);
+  digitalWrite(speedBluePin,LOW);
+  StopTone();
+  playTone(1046,750);
+  StopTone();  
 
   delay(50);
 
   digitalWrite(redPin,LOW);
+  digitalWrite(speedRedPin,LOW);
+  playTone(786,750);
 
 }
 
@@ -124,10 +149,18 @@ void executeCollisionWarning()
   digitalWrite(greenPin,HIGH);
   digitalWrite(redPin,LOW);
   digitalWrite(bluePin,LOW);
+  digitalWrite(speedGreenPin,HIGH);
+  digitalWrite(speedRedPin,LOW);
+  digitalWrite(speedBluePin,LOW);
+  StopTone();
+  playTone(555,500);
+  StopTone();
 
   delay(50);
 
   digitalWrite(greenPin,LOW);
+  digitalWrite(speedGreenPin,LOW);
+  playTone(0,500);
 
 }
 
@@ -135,22 +168,39 @@ void executeLapStartStop()
 {
   digitalWrite(bluePin,HIGH);
   digitalWrite(greenPin,LOW);
-  digitalWrite(greenPin,LOW);
-
+  digitalWrite(redPin,LOW);
+  digitalWrite(speedBluePin,HIGH);
+  digitalWrite(speedGreenPin,LOW);
+  digitalWrite(speedRedPin,LOW);
+  StopTone();
+  playTone(783,150);
+  StopTone();
+  
   delay(50);
 
   digitalWrite(bluePin,LOW);
+  digitalWrite(speedBluePin,LOW);
+  playTone(1046,150);
 
 }
 
 void executeSystemCheck()
 {
-
-
+  digitalWrite(redPin,HIGH);
+  digitalWrite(greenPin,HIGH);
+  digitalWrite(bluePin,HIGH);
+  digitalWrite(speedRedPin,HIGH);
+  digitalWrite(speedGreenPin,HIGH);
+  digitalWrite(speedBluePin,HIGH);
+  StopTone();
+  playTone(4186,100);
+  StopTone();
+  delay(50);
+  digitalWrite(redPin,LOW);
+  digitalWrite(greenPin,LOW);
+  digitalWrite(bluePin,LOW);
+  digitalWrite(speedRedPin,LOW);
+  digitalWrite(speedGreenPin,LOW);
+  digitalWrite(speedBluePin,LOW);
+  playTone(4186,100);
 }
-
-
-
-
-
-
