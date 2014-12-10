@@ -1,9 +1,3 @@
-//pins for the Speed LED
-const int speedBluePin=2;
-const int speedGreenPin=3; 
-const int speedGroundPin=4; //PWM pin
-const int speedRedPin=5; //PWM pin
-
 //pins for the RGB LED for each warning
 const int redPin=6; //PWM pin
 const int groundPin=7;
@@ -12,6 +6,24 @@ const int bluePin=9;
 
 //pin for the attached speaker
 const int speakerPin=12;
+
+void playTone(int freq, int duration)
+{
+  //if there's no duration, assume the note will play until stopped
+  if(duration==0)
+  {
+    tone(speakerPin,freq);
+  }
+
+  //play the note for a certain duration
+  else 
+  {
+    tone(speakerPin,freq);
+    delay(duration);
+    noTone(speakerPin);
+  }
+
+}
 
 void setup()
 {
@@ -23,19 +35,8 @@ void setup()
   pinMode(greenPin,OUTPUT);
   pinMode(redPin,OUTPUT);
 
-  pinMode(speedGroundPin,OUTPUT);
-  pinMode(speedBluePin,OUTPUT);
-  pinMode(speedGreenPin,OUTPUT);
-  pinMode(speedRedPin,OUTPUT);
-
-  //setup speed pins
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedGroundPin,LOW);
-  digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedGreenPin,LOW);  
-
   //setup speaker
-  setupBuzzer(speakerPin);
+  pinMode(speakerPin,OUTPUT);
 
   playTone(4186,100);
   delay(50);
@@ -119,17 +120,14 @@ void executeLaneViolation()
   digitalWrite(redPin,HIGH);
   digitalWrite(greenPin,LOW);
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedRedPin,HIGH);
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedBluePin,LOW);
-  StopTone();
+
+  noTone(speakerPin);
   playTone(1046,750);
-  StopTone();  
+  noTone(speakerPin);  
 
   delay(50);
 
   digitalWrite(redPin,LOW);
-  digitalWrite(speedRedPin,LOW);
   playTone(786,750);
 
 }
@@ -140,17 +138,13 @@ void executeCollisionWarning()
   digitalWrite(greenPin,HIGH);
   digitalWrite(redPin,LOW);
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedGreenPin,HIGH);
-  digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedBluePin,LOW);
-  StopTone();
+  noTone(speakerPin);
   playTone(555,500);
-  StopTone();
+  noTone(speakerPin);
 
   delay(50);
 
   digitalWrite(greenPin,LOW);
-  digitalWrite(speedGreenPin,LOW);
   playTone(0,500);
 
 }
@@ -160,17 +154,13 @@ void executeLapStartStop()
   digitalWrite(bluePin,HIGH);
   digitalWrite(greenPin,LOW);
   digitalWrite(redPin,LOW);
-  digitalWrite(speedBluePin,HIGH);
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedRedPin,LOW);
-  StopTone();
+  noTone(speakerPin);
   playTone(783,150);
-  StopTone();
+  noTone(speakerPin);
 
   delay(50);
 
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedBluePin,LOW);
   playTone(1046,150);
 
 }
@@ -180,19 +170,15 @@ void executeSystemCheck()
   digitalWrite(redPin,HIGH);
   digitalWrite(greenPin,HIGH);
   digitalWrite(bluePin,HIGH);
-  digitalWrite(speedRedPin,HIGH);
-  digitalWrite(speedGreenPin,HIGH);
-  digitalWrite(speedBluePin,HIGH);
-  StopTone();
+
+  noTone(speakerPin);
   playTone(4186,100);
-  StopTone();
+  noTone(speakerPin);
   delay(50);
   digitalWrite(redPin,LOW);
   digitalWrite(greenPin,LOW);
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedBluePin,LOW);
+
   playTone(4186,100);
 }
 
