@@ -53,7 +53,7 @@ const byte LAP_STARTSTOP=0xC;
 const byte HEARTBEAT=0xD;
 const byte SYSTEM_CHECK=0xE;
 
-//true to falsh a yellow LED for the heartbeat
+//true to falsh a white LED for the heartbeat
 const boolean SHOW_HEART_BEAT=true;
 
 int counter=0;
@@ -61,8 +61,7 @@ byte readArray[4];
 
 void loop()
 {
-  speedLoop(0.8);
-  while(true)//Serial.available()>0)
+  while(Serial.available()>0)
   {
     readArray[counter%4]=Serial.read(); 
     counter++;
@@ -70,7 +69,7 @@ void loop()
     //determine if this packet is valid
     boolean validPacket=(readArray[0]^readArray[1]^readArray[2]^readArray[3])==0xff;
 
-    if(true)//validPacket)
+    if(validPacket)
     {
       //process this packet
       byte commandByte=0xC;//readArray[0];
