@@ -81,13 +81,17 @@ void updateLCD(int laps, int violations, int collisions)
   
   if(updateRequired)
   {
-     lcd.clear(); 
+  
+    int score = 100-(currentCollisions*10)-(5*currentViolations);
+  
      
      String upper="";
-     upper= upper+"Lap: "+currentLaps+"  Lane: "+currentViolations;
+     upper= upper+"Score:"+score+" Lap:"+currentLaps;
      
      String lower="";
-     lower=lower+"Crash: "+currentCollisions;
+     lower=lower+"Crash:"+currentCollisions+" Lane:"+currentViolations;
+     
+      lcd.clear(); 
 
      lcd.setCursor(0,0);
      lcd.print(upper.c_str());
