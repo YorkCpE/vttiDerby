@@ -1,21 +1,21 @@
-//pins for the Speed LED
-const int speedBluePin=2;
-const int speedGreenPin=3; 
-const int speedGroundPin=4; //PWM pin
-const int speedRedPin=5; //PWM pin
+#include <SoftwareSerial.h>
 
 //pins for the RGB LED for each warning
-const int redPin=6; //PWM pin
-const int groundPin=7;
-const int greenPin=8;
-const int bluePin=9;
+const int redPin=A2; //PWM pin
+const int groundPin=A3;
+const int greenPin=A4;
+const int bluePin=A5;
 
 //pin for the attached speaker
 const int speakerPin=12;
 
+
+SoftwareSerial mySoftSerial(2,3);
+
 void setup()
 {
   Serial.begin(9600);
+  mySoftSerial.begin(9600);
 
   //setup LED pins
   pinMode(groundPin,OUTPUT);
@@ -23,17 +23,12 @@ void setup()
   pinMode(greenPin,OUTPUT);
   pinMode(redPin,OUTPUT);
   
-  pinMode(speedGroundPin,OUTPUT);
-  pinMode(speedBluePin,OUTPUT);
-  pinMode(speedGreenPin,OUTPUT);
-  pinMode(speedRedPin,OUTPUT);
-
-  //setup speed pins
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedGroundPin,LOW);
-  digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedGreenPin,LOW);  
+  digitalWrite(groundPin,LOW);
+  digitalWrite(bluePin,LOW);
+  digitalWrite(greenPin,LOW);
+  digitalWrite(redPin,LOW);
   
+    
   //setup speaker
   setupBuzzer(speakerPin);
   
@@ -45,6 +40,8 @@ void setup()
   delay(50);
   playTone(2093,100);
   
+  
+  setupLCD();
 }
 
 const byte LANE_VIOLATION=0xA;
@@ -53,17 +50,31 @@ const byte LAP_STARTSTOP=0xC;
 const byte HEARTBEAT=0xD;
 const byte SYSTEM_CHECK=0xE;
 
+//add in byte commands for starting/stopping race.
+const byte RACE_START=0x1A;
+const byte RACE_END=0x1B;
+
+//variables to hold the number of violations
+int numLaneViolations=0;
+int numLapsCompleted=0;
+int numCollisions=0;
+
+
 //true to falsh a white LED for the heartbeat
-const boolean SHOW_HEART_BEAT=true;
+const boolean SHOW_HEART_BEAT=false;
 
 int counter=0;
 byte readArray[4];
 
 void loop()
 {
-  while(Serial.available()>0)
+  updateLCD(numLapsCompleted,numLaneViolations,numCollisions);
+
+  //while(Serial.available()>0)
+  while(mySoftSerial.available()>0)
   {
-    readArray[counter%4]=Serial.read(); 
+    //readArray[counter%4]=Serial.read(); 
+    readArray[counter%4]=mySoftSerial.read();
     counter++;
 
     //determine if this packet is valid
@@ -72,20 +83,23 @@ void loop()
     if(validPacket)
     {
       //process this packet
-      byte commandByte=0xC;//readArray[0];
+      byte commandByte=readArray[0];
       byte args[2]={readArray[1],readArray[2]};
 
       if(commandByte==LANE_VIOLATION)
       {
         executeLaneViolation();
+        numLaneViolations++;
       }
       else if(commandByte==COLLISION_WARNING)
       {
         executeCollisionWarning(); 
+        numCollisions++;
       }
       else if(commandByte==LAP_STARTSTOP)
       { 
         executeLapStartStop();
+        numLapsCompleted++;
       }
       else if(commandByte==HEARTBEAT)
       {
@@ -124,20 +138,17 @@ void loop()
 void executeLaneViolation()
 {
 
-  digitalWrite(redPin,HIGH);
-  digitalWrite(greenPin,LOW);
+  digitalWrite(redPin,LOW);
+  digitalWrite(greenPin,HIGH);
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedRedPin,HIGH);
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedBluePin,LOW);
+  
   StopTone();
   playTone(1046,750);
   StopTone();  
 
   delay(50);
 
-  digitalWrite(redPin,LOW);
-  digitalWrite(speedRedPin,LOW);
+  digitalWrite(greenPin,LOW);
   playTone(786,750);
 
 }
@@ -145,20 +156,16 @@ void executeLaneViolation()
 void executeCollisionWarning()
 {
 
-  digitalWrite(greenPin,HIGH);
-  digitalWrite(redPin,LOW);
+  digitalWrite(greenPin,LOW);
+  digitalWrite(redPin,HIGH);
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedGreenPin,HIGH);
-  digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedBluePin,LOW);
   StopTone();
   playTone(555,500);
   StopTone();
 
   delay(50);
 
-  digitalWrite(greenPin,LOW);
-  digitalWrite(speedGreenPin,LOW);
+  digitalWrite(redPin,LOW);
   playTone(0,500);
 
 }
@@ -168,9 +175,6 @@ void executeLapStartStop()
   digitalWrite(bluePin,HIGH);
   digitalWrite(greenPin,LOW);
   digitalWrite(redPin,LOW);
-  digitalWrite(speedBluePin,HIGH);
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedRedPin,LOW);
   StopTone();
   playTone(783,150);
   StopTone();
@@ -178,7 +182,6 @@ void executeLapStartStop()
   delay(50);
 
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedBluePin,LOW);
   playTone(1046,150);
 
 }
@@ -188,9 +191,6 @@ void executeSystemCheck()
   digitalWrite(redPin,HIGH);
   digitalWrite(greenPin,HIGH);
   digitalWrite(bluePin,HIGH);
-  digitalWrite(speedRedPin,HIGH);
-  digitalWrite(speedGreenPin,HIGH);
-  digitalWrite(speedBluePin,HIGH);
   StopTone();
   playTone(4186,100);
   StopTone();
@@ -198,8 +198,5 @@ void executeSystemCheck()
   digitalWrite(redPin,LOW);
   digitalWrite(greenPin,LOW);
   digitalWrite(bluePin,LOW);
-  digitalWrite(speedRedPin,LOW);
-  digitalWrite(speedGreenPin,LOW);
-  digitalWrite(speedBluePin,LOW);
   playTone(4186,100);
 }
