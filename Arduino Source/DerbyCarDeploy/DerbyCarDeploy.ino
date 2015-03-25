@@ -22,16 +22,16 @@ void setup()
   pinMode(bluePin,OUTPUT);
   pinMode(greenPin,OUTPUT);
   pinMode(redPin,OUTPUT);
-  
+
   digitalWrite(groundPin,LOW);
   digitalWrite(bluePin,LOW);
   digitalWrite(greenPin,LOW);
   digitalWrite(redPin,LOW);
-  
-    
+
+
   //setup speaker
   setupBuzzer(speakerPin);
-  
+
   playTone(4186,100);
   delay(50);
   playTone(3951,100);
@@ -39,8 +39,8 @@ void setup()
   playTone(3520,100);
   delay(50);
   playTone(2093,100);
-  
-  
+
+
   setupLCD();
 }
 
@@ -51,14 +51,16 @@ const byte HEARTBEAT=0xD;
 const byte SYSTEM_CHECK=0xE;
 
 //add in byte commands for starting/stopping race.
-const byte RACE_START=0x1A;
-const byte RACE_END=0x1B;
+const byte PRE_RACE=0x1A;
+const byte RACE=0x1B;
+const byte POST_RACE=0x1C;
 
+enum RaceState {PRE,ACTIVE,POST};
 //variables to hold the number of violations
 int numLaneViolations=0;
 int numLapsCompleted=0;
 int numCollisions=0;
-
+boolean raceActive=false;
 
 //true to falsh a white LED for the heartbeat
 const boolean SHOW_HEART_BEAT=false;
@@ -84,22 +86,29 @@ void loop()
     {
       //process this packet
       byte commandByte=readArray[0];
-      byte args[2]={readArray[1],readArray[2]};
+      byte args[2]={
+        readArray[1],readArray[2]      };
 
       if(commandByte==LANE_VIOLATION)
       {
         executeLaneViolation();
-        numLaneViolations++;
+        if(raceActive){
+          numLaneViolations++;
+        }
       }
       else if(commandByte==COLLISION_WARNING)
       {
         executeCollisionWarning(); 
-        numCollisions++;
+        if(raceActive){
+          numCollisions++;
+        }
       }
       else if(commandByte==LAP_STARTSTOP)
       { 
         executeLapStartStop();
-        numLapsCompleted++;
+        if(raceActive){
+          numLapsCompleted++;
+        }
       }
       else if(commandByte==HEARTBEAT)
       {
@@ -123,6 +132,19 @@ void loop()
         executeSystemCheck(); 
 
       }
+      else if(commandByte==PRE_RACE)
+      {
+        numLaneViolations=numLapsCompleted=numCollisions=0;
+        raceActive=false;
+      }
+      else if(commandByte==RACE)
+      {
+         raceActive=true; 
+      }
+      else if(commandByte==POST_RACE)
+      {
+        raceActive=false; 
+      }
 
       //this is needed because otherwise the command may execute multiple times
       //depending on what is received later (mainly because a failure of my message encoding
@@ -141,7 +163,7 @@ void executeLaneViolation()
   digitalWrite(redPin,LOW);
   digitalWrite(greenPin,HIGH);
   digitalWrite(bluePin,LOW);
-  
+
   StopTone();
   playTone(1046,750);
   StopTone();  
@@ -178,7 +200,7 @@ void executeLapStartStop()
   StopTone();
   playTone(783,150);
   StopTone();
-  
+
   delay(50);
 
   digitalWrite(bluePin,LOW);
@@ -200,3 +222,4 @@ void executeSystemCheck()
   digitalWrite(bluePin,LOW);
   playTone(4186,100);
 }
+
