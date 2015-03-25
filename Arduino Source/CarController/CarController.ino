@@ -2,11 +2,38 @@
 
 #include <XBee.h>
 
-//pins for control buttons
-const int LaneViolationPin=4; 
-const int CollisionWarningPin=5;
-const int LapPin=6;
-const int SystemCheckPin=7;
+//LCD screen includes
+#include <LiquidCrystal.h>
+#include <LCDKeypad.h>
+LiquidCrystal lcd(8, 13, 9, 4, 5, 6, 7);
+
+//vars for LCD screen
+int adc_key_val[5] ={
+  50, 200, 400, 600, 800 };
+int NUM_KEYS = 5;
+int adc_key_in;
+int key=-1;
+int oldkey=-1;
+
+char msgs[5][16] = {
+  "Right Key OK ",
+  "Up Key OK    ",               
+  "Down Key OK  ",
+  "Left Key OK  ",
+  "Select Key OK" };
+
+//recognized buttons
+const int NO_BUTTON=-1;
+const int LEFT_BUTTON=0;
+const int RIGHT_BUTTON=1;
+const int UP_BUTTON=2;
+const int DOWN_BUTTON=3;
+const int SELECT_BUTTON=4;
+
+const int buttons[]={
+  RIGHT_BUTTON,UP_BUTTON,DOWN_BUTTON,LEFT_BUTTON,SELECT_BUTTON};
+
+
 
 //my address
 const byte TriangleRed=0x09;
@@ -15,6 +42,7 @@ const byte TriangleGreen=0x0B;
 const byte TriangleYellow=0x0C;
 const byte ManagerAddress=0x01;
 
+//assign the vehicle I am controlling
 const byte myVehicle=TriangleRed;
 
 //command codes
@@ -23,12 +51,9 @@ const byte COLLISION_WARNING=0xB;
 const byte LAP_STARTSTOP=0xC;
 const byte HEARTBEAT=0xD;
 const byte SYSTEM_CHECK=0xE;
-
-
-const byte commandBytes[]={
-  LANE_VIOLATION,COLLISION_WARNING,LAP_STARTSTOP,SYSTEM_CHECK};
-const int buttonPins[]={
-  LaneViolationPin,CollisionWarningPin,LapPin,SystemCheckPin};
+const byte RACE_START=0x1A;
+const byte RACE_STOP=0x1B;
+const byte NO_OP=0x1C;
 
 XBee xbee = XBee();
 
@@ -40,141 +65,176 @@ uint8_t payload[] = {
 
 TxStatusResponse txStatus = TxStatusResponse();
 
+void setupLCD()
+{
+  lcd.begin(16, 2);
+  
+/*  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("     hello! ");
+  lcd.print("     welcome!");
+  lcd.setCursor(0,1);
+  lcd.print("ICAT   ICAT");
+  lcd.print("Cardboard Derby");
+  delay(1000);
+
+  lcd.setCursor(0,0);
+  for (char k=0;k<26;k++)
+  {
+    lcd.scrollDisplayLeft();
+    delay(400);
+  }*/
+  lcd.clear();
+  lcd.setCursor(0,0); 
+  lcd.print(" Ready to Race? "); 
+}
 void setup()
 {
   Serial.begin(9600);
 
   //xbee.setSerial(mySerial);
-  xbee.setSerial(Serial);
+  //xbee.setSerial(Serial);
 
-  //setup button pins
-  pinMode(LaneViolationPin,INPUT);
-  pinMode(CollisionWarningPin,INPUT);
-  pinMode(LapPin,INPUT);
-  pinMode(SystemCheckPin,INPUT);
+  setupLCD();
 }
 
-const boolean DEBUG=false;
+const boolean DEBUG=true;
 
 byte lastCommand=0x0;
 boolean packetSent=false;
 void sendCommandByte(byte commandByte, byte vehicle)
 {
+  if(commandByte==NO_OP)
+  {
+    return; 
+  }
+
   if(DEBUG)
     Serial.println("Sending Command ");
-  
+
   if(DEBUG){
-  if(commandByte==LANE_VIOLATION)
-  {
-     Serial.println("Lane Violation"); 
+    if(commandByte==LANE_VIOLATION)
+    {
+      Serial.println("Lane Violation"); 
+    }
+    else if(commandByte==COLLISION_WARNING)
+    {
+      Serial.println("Collision Warning");
+    }
+    else if(commandByte==LAP_STARTSTOP)
+    {
+      Serial.println("Lap Start/Stop");
+    }
+    else if(commandByte==HEARTBEAT)
+    {
+      Serial.println("Heart Beat");
+    }
+    else if(commandByte==0xE)
+    {
+      Serial.println("System Check");
+    }
   }
-  else if(commandByte==COLLISION_WARNING)
-  {
-    Serial.println("Collision Warning");
-  }
-  else if(commandByte==LAP_STARTSTOP)
-  {
-    Serial.println("Lap Start/Stop");
-  }
-  else if(commandByte==HEARTBEAT)
-  {
-    Serial.println("Heart Beat");
-  }
-  else if(commandByte==0xE)
-  {
-    Serial.println("System Check");
-  }}
-  
+
   byte argBytes[]={
-    0x0,0x0    };
+    0x0,0x0              };
 
   byte checkSum=(byte) (commandByte^argBytes[0]^argBytes[1]^0xff);
 
   byte payload[]={
-    commandByte,argBytes[0],argBytes[1],checkSum    };
+    commandByte,argBytes[0],argBytes[1],checkSum              };
 
   Tx16Request toArduino = Tx16Request(myVehicle, payload, sizeof(payload));  
 
   lastCommand=commandByte;
-  
+
   if(!DEBUG)
   {
     xbee.send(toArduino);
+    packetSent=true;
   }
 }
 
-const int debounceDelay=50;
-static int currentButtonState[]={0,0,0,0};
-static int lastButtonState[]={0,0,0,0}; 
-static int lastDebounceTime[]={0,0,0,0};
-
-boolean buttonPressed(int pin)
-{ 
-  boolean returnState=false;
-  
-  int reading=digitalRead(pin);
-
-  if(reading!= lastButtonState[pin%4])
+// Convert ADC value to key number
+int get_key(unsigned int input)
+{
+  int k;
+  for (k = 0; k < NUM_KEYS; k++)
   {
-    lastDebounceTime[pin%4]=millis(); 
-  }
-  
-  if ((millis() - lastDebounceTime[pin%4]) > debounceDelay) {
-    // whatever the reading is at, it's been there for longer
-    // than the debounce delay, so take it as the actual current state:
+    if (input < adc_key_val[k])
+    {
+      return k;
+    }
+  }   
+  if (k >= NUM_KEYS)k = -1;  // No valid key pressed
+  return k;
+}
 
-    // if the button state has changed:
-    if (reading != currentButtonState[pin%4]) {
-      currentButtonState[pin%4] = reading;
+int getButtonPress()
+{
+  adc_key_in = analogRead(0);    // read the value from the sensor 
+  key = get_key(adc_key_in);  // convert into key press
+  if (key != oldkey)   // if keypress is detected
+  {
+    delay(50);  // wait for debounce time
+    adc_key_in = analogRead(0);    // read the value from the sensor 
+    key = get_key(adc_key_in);    // convert into key press
+    if (key != oldkey)    
+    {   
+      /*if(DEBUG)
+       {
+       lcd.setCursor(0, 1);
+       }*/
 
-      // only toggle the LED if the new button state is HIGH
-      if (currentButtonState[pin%4] == HIGH) 
+      oldkey = key;
+      if (key >=0)
       {
-        if(DEBUG)
-        {
-           Serial.print("Button ");
-           Serial.print(pin);
-           Serial.println(" pressed.");
-           Serial.flush();
-        }
-        
-        returnState=true;
-      }
-      else
-      {
-         returnState=false;
+        /*if(DEBUG)
+         {
+         lcd.print(msgs[key]);              
+         }*/
+
+        return buttons[key];
       }
     }
   }
-  
-  lastButtonState[pin%4]=reading;
-  
-  return returnState;
-}
 
-long last = millis();
+  return NO_BUTTON;
+}
 
 void loop()
 {
-  for(int i=0;i<4;i++)
+
+  int buttonPressed=getButtonPress();
+
+  if(buttonPressed>=0 && buttonPressed<NUM_KEYS)
   {
-    if(buttonPressed(buttonPins[i]))
+    lcd.setCursor(0, 1);
+    switch(buttonPressed)
     {
-      sendCommandByte(commandBytes[i],myVehicle); 
-      packetSent=true;
-      last=millis();
+    case LEFT_BUTTON:
+      lcd.print(" Lane Violation ");
+      sendCommandByte(LANE_VIOLATION,myVehicle);
+      break;
+    case RIGHT_BUTTON:
+      lcd.print("    New Lap!    ");
+      sendCommandByte(LAP_STARTSTOP,myVehicle);
+      break;
+    case UP_BUTTON:
+      lcd.print("    Collision!   ");
+      sendCommandByte(COLLISION_WARNING,myVehicle);
+      break;
+    case DOWN_BUTTON:
+      //lcd.print("Down Button     ");
+      break;
+    case SELECT_BUTTON:
+      lcd.print("   System Check!  "); 
+      sendCommandByte(SYSTEM_CHECK,myVehicle);
+      break;
+    default:
+      break;
     }
   }
-  
-  /*
-  static long last = millis();
-  if(millis()-last>5000)
-  {
-     sendCommandByte(SYSTEM_CHECK,myVehicle); 
-     packetSent=true;
-     last=millis();
-  }*/
- 
+
   // after sending a tx request, we expect a status response
   // wait up to 5 seconds for the status response
   if(packetSent && !DEBUG)
@@ -195,24 +255,21 @@ void loop()
           if(DEBUG)
           {
             Serial.println("Success!");
-            
-            /*byte scoreboardPayload[]={myVehicle,lastCommand,0x0,(myVehicle^lastCommand^0x0^0xff)};            
-            Tx16Request toScoreboard = Tx16Request(0x05, scoreboardPayload, sizeof(scoreboardPayload));  
-            xbee.send(toScoreboard);
-            packetSent=true;*/
           }
         } 
         else 
         {
           // the remote XBee did not receive our packet. is it powered on?
           if(DEBUG)
+          {
             Serial.println("Did not receive!");
+          }
         }
       }      
     } 
     else if (xbee.getResponse().isError()) 
     {
-        Serial.println("Error!");
+      Serial.println("Error!");
     } 
     else 
     {
@@ -223,6 +280,11 @@ void loop()
 
   delay(10);
 }
+
+
+
+
+
 
 
 
