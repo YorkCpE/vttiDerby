@@ -40,6 +40,10 @@ const byte TriangleRed=0x09;
 const byte TriangleBlue=0X0A;
 const byte TriangleGreen=0x0B;
 const byte TriangleYellow=0x0C;
+const byte TrianglePurple=0x0D;
+const byte TriangleBlack=0x0E;
+const byte TriangleOrange=0x0F;
+
 const byte ManagerAddress=0x01;
 
 //assign the vehicle I am controlling
