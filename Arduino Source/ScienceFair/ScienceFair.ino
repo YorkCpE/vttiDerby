@@ -15,6 +15,8 @@ const byte TriangleGreen=0x0B;
 const byte TriangleYellow=0x0C;
 const byte ManagerAddress=0x01;
 
+const byte myVehicle=TriangleRed;
+
 //command codes
 const byte LANE_VIOLATION=0xA;
 const byte COLLISION_WARNING=0xB;
@@ -27,8 +29,6 @@ const byte commandBytes[]={
   LANE_VIOLATION,COLLISION_WARNING,LAP_STARTSTOP,SYSTEM_CHECK};
 const int buttonPins[]={
   LaneViolationPin,CollisionWarningPin,LapPin,SystemCheckPin};
-
-const byte myVehicle=TriangleBlue;
 
 XBee xbee = XBee();
 
@@ -56,6 +56,7 @@ void setup()
 
 const boolean DEBUG=false;
 
+byte lastCommand=0x0;
 boolean packetSent=false;
 void sendCommandByte(byte commandByte, byte vehicle)
 {
@@ -63,19 +64,19 @@ void sendCommandByte(byte commandByte, byte vehicle)
     Serial.println("Sending Command ");
   
   if(DEBUG){
-  if(commandByte==0xA)
+  if(commandByte==LANE_VIOLATION)
   {
      Serial.println("Lane Violation"); 
   }
-  else if(commandByte==0xB)
+  else if(commandByte==COLLISION_WARNING)
   {
     Serial.println("Collision Warning");
   }
-  else if(commandByte==0xC)
+  else if(commandByte==LAP_STARTSTOP)
   {
     Serial.println("Lap Start/Stop");
   }
-  else if(commandByte==0xD)
+  else if(commandByte==HEARTBEAT)
   {
     Serial.println("Heart Beat");
   }
@@ -92,11 +93,13 @@ void sendCommandByte(byte commandByte, byte vehicle)
   byte payload[]={
     commandByte,argBytes[0],argBytes[1],checkSum    };
 
-  Tx16Request tx = Tx16Request(myVehicle, payload, sizeof(payload));  
+  Tx16Request toArduino = Tx16Request(myVehicle, payload, sizeof(payload));  
 
+  lastCommand=commandByte;
+  
   if(!DEBUG)
   {
-    xbee.send(tx);
+    xbee.send(toArduino);
   }
 }
 
@@ -189,12 +192,21 @@ void loop()
         if (txStatus.getStatus() == SUCCESS) 
         {
           // success.  time to celebrate
-          Serial.println("Success!");
+          if(DEBUG)
+          {
+            Serial.println("Success!");
+            
+            /*byte scoreboardPayload[]={myVehicle,lastCommand,0x0,(myVehicle^lastCommand^0x0^0xff)};            
+            Tx16Request toScoreboard = Tx16Request(0x05, scoreboardPayload, sizeof(scoreboardPayload));  
+            xbee.send(toScoreboard);
+            packetSent=true;*/
+          }
         } 
         else 
         {
           // the remote XBee did not receive our packet. is it powered on?
-          Serial.println("Did not receive!");
+          if(DEBUG)
+            Serial.println("Did not receive!");
         }
       }      
     } 
