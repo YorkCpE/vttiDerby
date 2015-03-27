@@ -47,8 +47,8 @@ const byte TriangleOrange=0x0F;
 const byte ManagerAddress=0x01;
 
 //assign the vehicle I am controlling
-const byte myVehicle=0x1e;
-String myCar="BlackSquare";
+const byte myVehicle=0x2c;
+String myCar="Yellow Circle";
 
 //command codes
 const byte LANE_VIOLATION=0xA;
@@ -84,14 +84,15 @@ void setup()
 {
   Serial.begin(9600);
   mySerial.begin(9600);
-
+  
+  
   xbee.setSerial(mySerial);
   //xbee.setSerial(Serial);
 
   setupLCD();
 }
 
-const boolean DEBUG=false;
+const boolean DEBUG=true;
 
 byte lastCommand=0x0;
 boolean packetSent=false;
@@ -141,7 +142,7 @@ void sendCommandByte(byte commandByte, byte vehicle)
   lastCommand=commandByte;
 
   xbee.send(toArduino);
-    
+  
   packetSent=true;
   
 }
