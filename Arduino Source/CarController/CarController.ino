@@ -47,8 +47,8 @@ const byte TriangleOrange=0x0F;
 const byte ManagerAddress=0x01;
 
 //assign the vehicle I am controlling
-const byte myVehicle=0x2c;
-String myCar="Yellow Circle";
+const byte myVehicle=0x2f;
+String myCar="Orange Circle";
 
 //command codes
 const byte LANE_VIOLATION=0xA;
