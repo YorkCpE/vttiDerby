@@ -60,7 +60,7 @@ enum RaceState {PRE,ACTIVE,POST};
 int numLaneViolations=0;
 int numLapsCompleted=0;
 int numCollisions=0;
-boolean raceActive=false;
+boolean raceActive=true;
 
 //true to falsh a white LED for the heartbeat
 const boolean SHOW_HEART_BEAT=false;
