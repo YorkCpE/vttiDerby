@@ -47,7 +47,8 @@ const byte TriangleOrange=0x0F;
 const byte ManagerAddress=0x01;
 
 //assign the vehicle I am controlling
-const byte myVehicle=TriangleRed;
+const byte myVehicle=0x1e;
+String myCar="BlackSquare";
 
 //command codes
 const byte LANE_VIOLATION=0xA;
@@ -69,40 +70,28 @@ uint8_t payload[] = {
 
 TxStatusResponse txStatus = TxStatusResponse();
 
+SoftwareSerial mySerial(2,3);
 void setupLCD()
 {
   lcd.begin(16, 2);
   
-/*  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("     hello! ");
-  lcd.print("     welcome!");
-  lcd.setCursor(0,1);
-  lcd.print("ICAT   ICAT");
-  lcd.print("Cardboard Derby");
-  delay(1000);
-
-  lcd.setCursor(0,0);
-  for (char k=0;k<26;k++)
-  {
-    lcd.scrollDisplayLeft();
-    delay(400);
-  }*/
   lcd.clear();
   lcd.setCursor(0,0); 
-  lcd.print(" Ready to Race? "); 
+  
+  lcd.print(myCar.c_str()); 
 }
 void setup()
 {
   Serial.begin(9600);
+  mySerial.begin(9600);
 
-  //xbee.setSerial(mySerial);
+  xbee.setSerial(mySerial);
   //xbee.setSerial(Serial);
 
   setupLCD();
 }
 
-const boolean DEBUG=true;
+const boolean DEBUG=false;
 
 byte lastCommand=0x0;
 boolean packetSent=false;
@@ -151,11 +140,10 @@ void sendCommandByte(byte commandByte, byte vehicle)
 
   lastCommand=commandByte;
 
-  if(!DEBUG)
-  {
-    xbee.send(toArduino);
-    packetSent=true;
-  }
+  xbee.send(toArduino);
+    
+  packetSent=true;
+  
 }
 
 // Convert ADC value to key number
